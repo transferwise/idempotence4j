@@ -70,7 +70,7 @@ consult the
 ## Database modules
 
 idempotence4j comes with a set of database specific implementations.
-For now there is only support for `PostgresSQL` but `MariaDB` support is next on the roadmap
+For now the library supports `PostgresSQL` only, `MariaDB` is the next on the roadmap.
 
 ### PostgresSQL Module
 
@@ -84,7 +84,7 @@ dependencies {
 
 ### Flyway
 
-`Postgres` module contains Flyway migration definitions to keep requied tables schemas up-to-date
+`Postgres` module contains Flyway migration definitions to keep required tables schemas up-to-date
 
 ```java
 
