@@ -55,10 +55,10 @@ To add a dependency on **idempotence4j** using Gradle, use the following:
 dependencies {
   // Pick one:
 
-  // 1. Use Guava in your implementation only:
+  // 1. Use idempotence4j in your implementation only:
   implementation("com.transferwise.idempotence4j:idempotence4j-core:1.0.0")
 
-  // 2. Use Guava types in your public API:
+  // 2. Use idempotence4j types in your public API:
   api("com.transferwise:idempotence4j-core:1.0.0")
 }
 ```
@@ -80,6 +80,23 @@ To add PostgresSQL module to your build using Gradle, use the following:
 dependencies {
   implementation("com.transferwise.idempotence4j:idempotence4j-postgres:1.0.0")
 }
+```
+
+### Flyway
+
+`Postgres` module contains Flyway migration definitions to keep requied tables schemas up-to-date
+
+```java
+
+@Bean
+public Flyway getFlyway(dataSource) {
+    def configuration = new FluentConfiguration()
+        .dataSource(dataSource)
+        .locations("filesystem:src/main/resources/db/idempotence4j/postgres")
+
+    return new Flyway(configuration)
+}
+
 ```
 
 ## Spring Boot
