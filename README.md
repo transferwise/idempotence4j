@@ -90,7 +90,7 @@ dependencies {
 
 @Bean
 public Flyway getFlyway(dataSource) {
-    def configuration = new FluentConfiguration()
+    var configuration = new FluentConfiguration()
         .dataSource(dataSource)
         .locations("filesystem:src/main/resources/db/idempotence4j/postgres")
 
