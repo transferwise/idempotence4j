@@ -1,0 +1,6 @@
+dependencies {
+    compile libraries.spring_jdbc
+    compile libraries.jackson_datatype
+
+    testCompile project(':idempotence4j-test')
+}

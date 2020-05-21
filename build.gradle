@@ -1,0 +1,130 @@
+wrapper {
+	gradleVersion = '6.4.1'
+}
+
+buildscript {
+	repositories {
+		maven { url "https://arti.tw.ee/artifactory/libs-release" }
+		mavenLocal()
+	}
+	dependencies {
+		classpath 'net.researchgate:gradle-release:2.8.1'
+		classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:2.1.1'
+	}
+}
+
+allprojects {
+	apply plugin: 'java'
+	apply plugin: 'groovy'
+	apply plugin: 'maven-publish'
+	apply plugin: 'net.researchgate.release'
+	apply plugin: 'org.unbroken-dome.test-sets'
+    apply from: "${rootDir}/libraries.gradle"
+
+	version = getVersion(project)
+
+	sourceCompatibility = '1.9'
+	targetCompatibility = '1.9'
+	repositories {
+		maven {
+			url 'https://arti.tw.ee/artifactory/libs-release'
+		}
+		mavenLocal()
+	}
+
+	testSets {
+		integrationTest {
+			dirName = 'test-integration'
+		}
+	}
+
+	dependencies {
+        annotationProcessor libraries.lombok
+        compileOnly libraries.lombok
+        compileOnly libraries.groovy
+
+        compile libraries.slf4j
+
+        testImplementation libraries.junit
+        testImplementation libraries.spock
+	}
+
+	task sourcesJar(type: Jar, dependsOn: classes, group: 'build') {
+		archiveClassifier = 'sources'
+		from sourceSets.main.allSource
+	}
+
+	artifacts {
+		archives sourcesJar
+	}
+
+	test {
+		reports.junitXml.destination = file('build/test-results')
+
+		testLogging {
+			events "passed", "skipped", "failed", "standardError"
+			showStackTraces = true
+			exceptionFormat = 'full'
+		}
+	}
+
+
+	integrationTest {
+		reports.junitXml.destination = file('build/test-integration-results')
+
+		testLogging {
+			events "passed", "skipped", "failed", "standardError"
+			showStackTraces = true
+			exceptionFormat = 'full'
+		}
+	}
+
+	publishing {
+		publications {
+			main(MavenPublication) {
+				from components.java
+				artifact sourcesJar
+			}
+		}
+		repositories {
+			maven {
+				url getArtifactoryUrl('libs')
+				name 'libs'
+				credentials {
+					username = System.getenv('ARTIFACTORY_USER')
+					password = System.getenv('ARTIFACTORY_PASSWORD')
+				}
+			}
+			mavenLocal()
+		}
+	}
+
+	release {
+		tagTemplate = '$name-$version'
+		preTagCommitMessage = "[ci skip] pre tag commit: "
+		tagCommitMessage = "[ci skip] creating tag: "
+		newVersionCommitMessage = "[ci skip] new version commit: "
+		failOnUnversionedFiles = false
+		revertOnFail = true
+		failOnCommitNeeded = false
+		buildTasks = ['assemble']
+		snapshotSuffix = ""
+	}
+
+	check.dependsOn integrationTest
+	afterReleaseBuild.dependsOn publish
+
+}
+
+static getArtifactoryUrl(libraryType) {
+	def releaseType = branchName() == 'master' ? 'release' : 'snapshot'
+	"https://arti.tw.ee/artifactory/${libraryType}-${releaseType}-local"
+}
+
+static branchName() {
+	'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
+}
+
+static getVersion(project) {
+	branchName() == 'master' ? project.version : project.version + '-SNAPSHOT'
+}
