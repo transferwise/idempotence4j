@@ -41,16 +41,19 @@ public class IdempotenceService {
             .execute(status -> actionRepository.insertOrGet(new Action(actionId)));
 
         if (action.hasCompleted()) {
-            S result = readResult(action);
-            return onRetry.apply(result);
+            return processRetry(action, onRetry);
         }
 
         return newTransaction(TransactionDefinition.PROPAGATION_REQUIRED).execute(status -> {
             Lock lock = lockProvider.lock(actionId).orElseThrow(() -> new ConflictingActionException("Request already in progress"));
 
             try (lock) {
-                action.started();
+                Action pendingAction = actionRepository.find(actionId).get();
+                if (pendingAction.hasCompleted()) {
+                    return processRetry(pendingAction, onRetry);
+                }
 
+                action.started();
                 R result = procedure.get();
                 S persistedResult = toRecord.apply(result);
 
@@ -60,6 +63,11 @@ public class IdempotenceService {
                 return result;
             }
         });
+    }
+
+    private <S, R> R processRetry(Action action, Function<S, R> onRetry) {
+        S result = readResult(action);
+        return onRetry.apply(result);
     }
 
     private <S> Result serializeResult(S result) {
