@@ -1,2 +1,2 @@
 rootProject.name = 'idempotence4j'
-include(':idempotence4j-core')
+include(':idempotence4j-core', ':idempotence4j-jdbc', ':idempotence4j-postgres', ':idempotence4j-test')
