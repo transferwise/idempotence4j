@@ -9,6 +9,7 @@ import com.transferwise.idempotence4j.core.serializers.json.JsonResultSerializer
 import com.transferwise.idempotence4j.postgres.JdbcPostgresActionRepository;
 import com.transferwise.idempotence4j.postgres.JdbcPostgresLockProvider;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -19,28 +20,30 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
+import static com.transferwise.idempotence4j.autoconfigure.Idempotence4jAutoConfiguration.PostgresAutoConfiguration;
 
 @Configuration
 @Slf4j
-@ConditionalOnBean({PlatformTransactionManager.class, DataSource.class})
+@ConditionalOnClass(value = {JdbcTemplate.class, PlatformTransactionManager.class})
+@AutoConfigureAfter(value = {PostgresAutoConfiguration.class})
 public class Idempotence4jAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(ObjectMapper.class)
+    @ConditionalOnClass(name = "com.fasterxml.jackson.databind.ObjectMapper")
     public ResultSerializer jsonResultSerializer(ObjectMapper objectMapper) {
         return new JsonResultSerializer(objectMapper);
     }
 
     @Bean
-    @ConditionalOnBean({PlatformTransactionManager.class, ActionRepository.class, LockProvider.class, ResultSerializer.class})
+    @ConditionalOnBean({ActionRepository.class, LockProvider.class, ResultSerializer.class})
     public IdempotenceService idempotenceService(
         PlatformTransactionManager platformTransactionManager,
         ActionRepository actionRepository,
         LockProvider lockProvider,
         ResultSerializer resultSerializer
     ) {
-        return new IdempotenceService(platformTransactionManager, actionRepository, lockProvider, resultSerializer);
+        return new IdempotenceService(platformTransactionManager, lockProvider, actionRepository, resultSerializer);
     }
 
     @Configuration

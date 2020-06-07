@@ -45,6 +45,7 @@ allprojects {
 
         compile libraries.slf4j
 
+        testCompile libraries.groovy
         testImplementation libraries.junit
         testImplementation libraries.spock
 	}

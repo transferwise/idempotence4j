@@ -14,5 +14,16 @@ dependencies {
     compileOnly project(':idempotence4j-core')
     compileOnly project(':idempotence4j-postgres')
 
-	compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
+    compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
+
+    integrationTestImplementation 'org.springframework.boot:spring-boot-starter-test'
+    integrationTestImplementation 'org.springframework.boot:spring-boot-starter-web'
+    integrationTestImplementation project(':idempotence4j-core')
+    integrationTestImplementation project(':idempotence4j-postgres')
+    integrationTestImplementation libraries.hikari
+    integrationTestImplementation libraries.postgresql
+    integrationTestImplementation libraries.test_containers
+    integrationTestImplementation libraries.postgres_test_container
+    integrationTestImplementation libraries.spock_spring
+    integrationTestImplementation libraries.spock_containers
 }
