@@ -11,7 +11,7 @@ dependencyManagement {
 }
 
 dependencies {
-    compileOnly project(':idempotence4j-core')
+    api project(':idempotence4j-core')
     compileOnly project(':idempotence4j-postgres')
 
     compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
