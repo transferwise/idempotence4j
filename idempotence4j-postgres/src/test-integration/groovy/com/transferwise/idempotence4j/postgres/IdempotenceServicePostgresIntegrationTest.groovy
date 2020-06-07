@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.transferwise.idempotence4j.core.Action
 import com.transferwise.idempotence4j.core.IdempotenceService
 import com.transferwise.idempotence4j.core.exception.ConflictingActionException
+import com.transferwise.idempotence4j.core.metrics.MetricsPublisher
 import com.transferwise.idempotence4j.core.serializers.json.JsonResultSerializer
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
@@ -24,9 +25,10 @@ class IdempotenceServicePostgresIntegrationTest extends IntegrationTest {
     def lockProvider = Spy(new JdbcPostgresLockProvider(jdbcTemplate))
     def repository = Spy(new JdbcPostgresActionRepository(jdbcTemplate))
     def resultSerializer = new JsonResultSerializer(new ObjectMapper())
+    def metricsPublisher = Mock(MetricsPublisher)
 
     @Subject
-    def service = new IdempotenceService(transactionManager, lockProvider, repository, resultSerializer)
+    def service = new IdempotenceService(transactionManager, lockProvider, repository, resultSerializer, metricsPublisher)
 
     def "under a load of concurrent requests action body should only be executed once"() {
         given:

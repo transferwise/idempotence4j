@@ -20,14 +20,10 @@ public class JdbcPostgresActionRepository implements ActionRepository {
 
 	@Override
 	public Optional<Action> find(ActionId actionId) {
-		MapSqlParameterSource parameters = new MapSqlParameterSource() {
-			{
-				addValue("key", actionId.getKey());
-				addValue("type", actionId.getType());
-				addValue("client", actionId.getClient());
-
-			}
-		};
+        MapSqlParameterSource parameters =new MapSqlParameterSource()
+            .addValue("key", actionId.getKey())
+            .addValue("type", actionId.getType())
+            .addValue("client", actionId.getClient());
 
 		return namedParameterJdbcTemplate.query(FIND_BY_ID_SQL, parameters, (rs, rowNum) -> sqlMapper.toEntity(rs))
 				.stream()

@@ -1,0 +1,6 @@
+dependencies {
+	compile project(':idempotence4j-core')
+	api libraries.micrometer
+
+	testCompile project(':idempotence4j-test')
+}

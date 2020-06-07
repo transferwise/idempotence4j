@@ -2,6 +2,7 @@ package com.transferwise.idempotence4j.core
 
 import com.transferwise.idempotence4j.core.exception.ConflictingActionException
 import com.transferwise.idempotence4j.core.exception.ResultSerializationException
+import com.transferwise.idempotence4j.core.metrics.MetricsPublisher
 import org.springframework.transaction.PlatformTransactionManager
 import com.transferwise.idempotence4j.factory.ActionTestFactory.TestResult
 import spock.lang.Specification
@@ -19,10 +20,11 @@ class IdempotenceServiceTest extends Specification {
     def lockProvider = Mock(LockProvider)
     def actionRepository = Mock(ActionRepository)
     def resultSerializer = Mock(ResultSerializer)
+    def metricsPublisher = Mock(MetricsPublisher)
     def lock = Mock(Lock)
 
     @Subject
-    def service = new IdempotenceService(platformTransactionManager, lockProvider, actionRepository, resultSerializer)
+    def service = new IdempotenceService(platformTransactionManager, lockProvider, actionRepository, resultSerializer, metricsPublisher)
 
     def "should successfully execute first time submitted action"() {
         given:
