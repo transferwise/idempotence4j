@@ -2,7 +2,7 @@ package com.transferwise.idempotence4j.core;
 
 import com.transferwise.idempotence4j.core.exception.ResultSerializationException;
 import com.transferwise.idempotence4j.core.exception.ConflictingActionException;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -13,12 +13,22 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
-@RequiredArgsConstructor
 public class IdempotenceService {
     private final PlatformTransactionManager platformTransactionManager;
     private final LockProvider lockProvider;
     private final ActionRepository actionRepository;
     private final ResultSerializer resultSerializer;
+
+    public IdempotenceService(
+        @NonNull PlatformTransactionManager platformTransactionManager,
+        @NonNull LockProvider lockProvider,
+        @NonNull ActionRepository actionRepository,
+        @NonNull ResultSerializer resultSerializer) {
+        this.platformTransactionManager = platformTransactionManager;
+        this.lockProvider = lockProvider;
+        this.actionRepository = actionRepository;
+        this.resultSerializer = resultSerializer;
+    }
 
     public <R> R execute(ActionId actionId, Supplier<R> action) {
         return this.execute(actionId, Function.identity(), action, Function.identity());

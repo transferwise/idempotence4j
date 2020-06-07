@@ -47,6 +47,7 @@ class IdempotenceServiceTest extends Specification {
             1 * actionRepository.insertOrGet({
                 it.actionId == actionId
             } as Action) >> action
+            1 * actionRepository.find(actionId) >> Optional.of(action)
             1 * lockProvider.lock(actionId) >> Optional.of(lock)
             0 * function.apply(_ as String)
             1 * actionRepository.update({
@@ -105,12 +106,14 @@ class IdempotenceServiceTest extends Specification {
     def "should fail with serialization exception if there is an exception while serializing result"() {
         given:
             def actionId = anActionId()
+            def action = anAction(actionId: actionId)
             def result = aResult()
             def persistedResult = result.name
         and:
             actionRepository.insertOrGet({
                 it.actionId == actionId
-            } as Action) >> anAction(actionId: actionId)
+            } as Action) >> action
+            actionRepository.find(actionId) >> Optional.of(action)
             lockProvider.lock(actionId) >> Optional.of(lock)
         and:
             resultSerializer.serialize(persistedResult) >> { throw new IOException() }

@@ -6,7 +6,7 @@ ext {
     springVersion = '2.2.4.RELEASE'
     springJdbcVersion = '4.3.18.RELEASE'
 
-    groovyVersion = '2.5.7'
+    groovyVersion = '2.5.9'
 
     hikariVersion = '2.5.1'
     flywayVersion = '6.1.4'

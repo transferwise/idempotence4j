@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: ${DATASOURCE_URL}
+    password: ${DATASOURCE_PASSWORD}
+    username: ${DATASOURCE_USERNAME}
+    driver-class-name: org.postgresql.Driver
+    platform: postgres
+    continue-on-error: false
+    initialization-mode: never
+    hikari:
+      connection-timeout: 2000
+      maximum-pool-size: 10
+
