@@ -5,6 +5,11 @@ references:
     docker:
       - image: arti.tw.ee/circle_openjdk13:latest
         user: circleci
+      - image: postgres:10.9
+        environment:
+          POSTGRES_DB: idempotence4j_db
+          POSTGRES_USER: username
+          POSTGRES_PASSWORD: password
     resource_class: medium
     environment:
       TERM: vt100
