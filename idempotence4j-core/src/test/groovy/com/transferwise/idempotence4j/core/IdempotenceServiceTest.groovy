@@ -2,6 +2,7 @@ package com.transferwise.idempotence4j.core
 
 import com.transferwise.idempotence4j.core.exception.ConflictingActionException
 import com.transferwise.idempotence4j.core.exception.ResultSerializationException
+import com.transferwise.idempotence4j.core.metrics.Metrics
 import com.transferwise.idempotence4j.core.metrics.MetricsPublisher
 import org.springframework.transaction.PlatformTransactionManager
 import com.transferwise.idempotence4j.factory.ActionTestFactory.TestResult
@@ -11,6 +12,9 @@ import spock.lang.Subject
 import java.util.function.Function
 import java.util.function.Supplier
 
+import static com.transferwise.idempotence4j.core.metrics.Metrics.Outcome.CONFLICT
+import static com.transferwise.idempotence4j.core.metrics.Metrics.Outcome.ERROR
+import static com.transferwise.idempotence4j.core.metrics.Metrics.Outcome.SUCCESS
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.aResult
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anAction
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anActionId
@@ -60,6 +64,10 @@ class IdempotenceServiceTest extends Specification {
                     type == "json"
                 }
             } as Action) >> action
+        and:
+            1 * metricsPublisher.publish({
+                it.outcome == SUCCESS
+            } as Metrics)
     }
 
     def "should return persisted result on subsequent retry calls"() {
@@ -88,6 +96,11 @@ class IdempotenceServiceTest extends Specification {
             1 * onRetry.apply({
                 it == persistedResult
             } as TestResult) >> result
+        and:
+            1 * metricsPublisher.publish({
+                it.outcome == SUCCESS
+                it.isRetry
+            } as Metrics)
     }
 
     def "should fail with conflicting exception for concurrent action"() {
@@ -102,6 +115,9 @@ class IdempotenceServiceTest extends Specification {
         when:
             service.execute(actionId, Mock(Function), Mock(Supplier), Mock(Function))
         then:
+            1 * metricsPublisher.publish({
+                it.outcome == CONFLICT
+            } as Metrics)
             thrown(ConflictingActionException)
     }
 
@@ -126,6 +142,9 @@ class IdempotenceServiceTest extends Specification {
                 return persistedResult
             })
         then:
+            1 * metricsPublisher.publish({
+                it.outcome == ERROR
+            } as Metrics)
             thrown(ResultSerializationException)
     }
 
@@ -141,6 +160,7 @@ class IdempotenceServiceTest extends Specification {
         when:
             service.execute(actionId, Mock(Function), Mock(Supplier), Mock(Function))
         then:
+            1 * metricsPublisher.publish(_ as Metrics)
             thrown(ResultSerializationException)
     }
 }

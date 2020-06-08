@@ -16,9 +16,15 @@ public class MeasuredExecutor {
     private final Map<Class<? extends Exception>, BiConsumer<Duration, Throwable>> onError;
     private BiConsumer<Duration, Throwable> onUnexpectedError;
     private Consumer<Duration> onSuccess;
+    private Runnable onComplete;
 
     public MeasuredExecutor() {
         this.onError = new HashMap<>();
+    }
+
+    public MeasuredExecutor onComplete(@NonNull Runnable onComplete) {
+        this.onComplete = onComplete;
+        return this;
     }
 
     public MeasuredExecutor onSuccess(@NonNull Consumer<Duration> onSuccess) {
@@ -41,6 +47,7 @@ public class MeasuredExecutor {
         try {
             R result = supplier.get();
             runOnSuccess(Duration.between(start, Instant.now()));
+            runOnComplete();
 
             return result;
         } catch (Throwable ex) {
@@ -50,8 +57,19 @@ public class MeasuredExecutor {
             } else {
                 runOnError(onUnexpectedError, ex, duration);
             }
+            runOnComplete();
 
             throw ex;
+        }
+    }
+
+    private void runOnComplete() {
+        if (null != onComplete) {
+            try {
+                onComplete.run();
+            } catch (Exception ex) {
+                log.warn("Failed to execute onComplete. Suppressing error", ex);
+            }
         }
     }
 

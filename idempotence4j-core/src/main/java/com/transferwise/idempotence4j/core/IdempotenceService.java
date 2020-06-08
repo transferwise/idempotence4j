@@ -61,9 +61,9 @@ public class IdempotenceService {
             .onError(ConflictingActionException.class, (duration, ex) -> metrics.record(duration, CONFLICT))
             .onUnexpectedError((duration, ex) -> metrics.record(duration, ERROR))
             .onSuccess((duration) -> metrics.record(duration, SUCCESS))
+            .onComplete(() -> metricsPublisher.publish(metrics))
             .submit(() -> execute(actionId, onRetry, procedure, toRecord, metrics));
 
-        metricsPublisher.publish(metrics);
         return result;
     }
 
