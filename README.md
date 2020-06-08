@@ -11,6 +11,7 @@ idempotence4j provides several modules:
 
 - **idempotence4j-core** - exposes main API and defines action execution strategy
 - **idempotence4j-postgres** - `PostgreSQL` integration, defines flyway migrations, contains implementation for action repository, locking
+- **idempotence4j-metrics** - publishes metrics to `io.micrometer` registry
 - **idempotence4j-spring-boot-starter** - auto configuration for `IdempotenceService` with automatic discovery of DB implementation module
 
 
@@ -55,6 +56,7 @@ If you're using **Spring Boot** here is a quick way of to add a dependency on **
 dependencies {
   implementation("com.transferwise.idempotence4j:idempotence4j-spring-boot-starter:1.0.0")
   implementation("com.transferwise.idempotence4j:idempotence4j-postgres:1.0.0")
+  implementation("com.transferwise.idempotence4j:idempotence4j-metrics:1.0.0")
 }
 ```
 Spring boot starter provides auto-discovery for known implementation modules
