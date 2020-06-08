@@ -18,15 +18,12 @@ public class JdbcPostgresLockProvider implements LockProvider {
 
 	@Override
 	public Optional<? extends Lock> lock(ActionId actionId) {
-		MapSqlParameterSource params = new MapSqlParameterSource() {
-			{
-				addValue("key", actionId.getKey());
-				addValue("type", actionId.getType());
-				addValue("client", actionId.getClient());
-			}
-		};
+        MapSqlParameterSource parameters =new MapSqlParameterSource()
+            .addValue("key", actionId.getKey())
+            .addValue("type", actionId.getType())
+            .addValue("client", actionId.getClient());
 
-		return namedParameterJdbcTemplate.query(LOCK_SQL, params, (rs, rowNum) -> new PostgresRowLock()).stream().findFirst();
+		return namedParameterJdbcTemplate.query(LOCK_SQL, parameters, (rs, rowNum) -> new PostgresRowLock()).stream().findFirst();
 	}
 
 	//@formatter:off
