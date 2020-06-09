@@ -79,7 +79,7 @@ jobs:
       - run: *set_git_config
       - run:
           name: Publish artifacts
-          command: ./gradlew release -Prelease.useAutomaticVersion=true --console=plain --info --stacktrace
+          command: ./gradlew publish pushTag --console=plain --info --stacktrace
 
 workflows:
   version: 2
