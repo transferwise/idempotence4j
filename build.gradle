@@ -130,3 +130,13 @@ static branchName() {
 static getVersion(project) {
 	branchName() == 'master' ? project.version : project.version + '-SNAPSHOT'
 }
+
+task addTag(type: Exec) {
+    commandLine 'git', 'tag', "$project.name-$project.version", '-m', "$project.name-$project.version"
+}
+task pushTag(type: Exec) {
+    commandLine 'git', 'push', 'origin', "$project.name-$project.version"
+}
+
+pushTag.dependsOn addTag
+pushTag.mustRunAfter publish
