@@ -3,6 +3,7 @@ package com.transferwise.idempotence4j.autoconfigure
 import com.transferwise.idempotence4j.autoconfigure.service.TestApplication
 import com.transferwise.idempotence4j.autoconfigure.service.configuration.JsonConfiguration
 import com.transferwise.idempotence4j.core.IdempotenceService
+import com.transferwise.idempotence4j.metrics.micrometer.MicrometerMetricsPublisher
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import spock.lang.Specification
@@ -15,5 +16,6 @@ class Idempotence4jAutoConfigurationTest extends Specification {
     def "should autowire idempotence service"() {
         expect:
             idempotenceService
+            idempotenceService.metricsPublisher instanceof MicrometerMetricsPublisher
     }
 }

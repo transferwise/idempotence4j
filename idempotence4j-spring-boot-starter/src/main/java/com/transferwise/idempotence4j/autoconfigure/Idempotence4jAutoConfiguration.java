@@ -53,7 +53,7 @@ public class Idempotence4jAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean({PlatformTransactionManager.class, ActionRepository.class, LockProvider.class, ResultSerializer.class, MetricsPublisher.class})
+    @ConditionalOnBean({ActionRepository.class, LockProvider.class, ResultSerializer.class, MetricsPublisher.class})
     public IdempotenceService idempotenceServiceWithMetrics(
         PlatformTransactionManager platformTransactionManager,
         ActionRepository actionRepository,
@@ -82,8 +82,7 @@ public class Idempotence4jAutoConfiguration {
     }
 
     @Configuration
-    @ConditionalOnClass({ MicrometerMetricsPublisher.class })
-    @ConditionalOnBean({MeterRegistry.class})
+    @ConditionalOnClass({ MicrometerMetricsPublisher.class, MeterRegistry.class })
     public static class MetricsPublisherAutoConfiguration {
 
         @Bean
