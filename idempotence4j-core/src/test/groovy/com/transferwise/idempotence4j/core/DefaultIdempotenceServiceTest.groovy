@@ -19,7 +19,7 @@ import static com.transferwise.idempotence4j.factory.ActionTestFactory.aResult
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anAction
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anActionId
 
-class IdempotenceServiceTest extends Specification {
+class DefaultIdempotenceServiceTest extends Specification {
     def platformTransactionManager = Mock(PlatformTransactionManager)
     def lockProvider = Mock(LockProvider)
     def actionRepository = Mock(ActionRepository)
@@ -28,7 +28,7 @@ class IdempotenceServiceTest extends Specification {
     def lock = Mock(Lock)
 
     @Subject
-    def service = new IdempotenceService(platformTransactionManager, lockProvider, actionRepository, resultSerializer, metricsPublisher)
+    def service = new DefaultIdempotenceService(platformTransactionManager, lockProvider, actionRepository, resultSerializer, metricsPublisher)
 
     def "should successfully execute first time submitted action"() {
         given:

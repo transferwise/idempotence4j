@@ -2,6 +2,7 @@ package com.transferwise.idempotence4j.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transferwise.idempotence4j.core.ActionRepository;
+import com.transferwise.idempotence4j.core.DefaultIdempotenceService;
 import com.transferwise.idempotence4j.core.IdempotenceService;
 import com.transferwise.idempotence4j.core.LockProvider;
 import com.transferwise.idempotence4j.core.ResultSerializer;
@@ -40,7 +41,7 @@ public class Idempotence4jAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean({IdempotenceService.class, MetricsPublisher.class})
+    @ConditionalOnMissingBean({DefaultIdempotenceService.class, MetricsPublisher.class})
     @ConditionalOnBean({ActionRepository.class, LockProvider.class, ResultSerializer.class})
     public IdempotenceService idempotenceService(
         PlatformTransactionManager platformTransactionManager,
@@ -48,7 +49,7 @@ public class Idempotence4jAutoConfiguration {
         LockProvider lockProvider,
         ResultSerializer resultSerializer
     ) {
-        return new IdempotenceService(platformTransactionManager, lockProvider, actionRepository, resultSerializer, m -> {});
+        return new DefaultIdempotenceService(platformTransactionManager, lockProvider, actionRepository, resultSerializer, m -> {});
     }
 
     @Bean
@@ -61,7 +62,7 @@ public class Idempotence4jAutoConfiguration {
         ResultSerializer resultSerializer,
         MetricsPublisher metricsPublisher
     ) {
-        return new IdempotenceService(platformTransactionManager, lockProvider, actionRepository, resultSerializer, metricsPublisher);
+        return new DefaultIdempotenceService(platformTransactionManager, lockProvider, actionRepository, resultSerializer, metricsPublisher);
     }
 
     @Configuration
