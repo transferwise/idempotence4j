@@ -41,7 +41,7 @@ public class Idempotence4jAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean({DefaultIdempotenceService.class, MetricsPublisher.class})
+    @ConditionalOnMissingBean({IdempotenceService.class, MetricsPublisher.class})
     @ConditionalOnBean({ActionRepository.class, LockProvider.class, ResultSerializer.class})
     public IdempotenceService idempotenceService(
         PlatformTransactionManager platformTransactionManager,
