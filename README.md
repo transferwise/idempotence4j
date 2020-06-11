@@ -1,3 +1,7 @@
+<a href="https://img.shields.io/badge/release-1.1.1-orange">
+        <img src="https://img.shields.io/badge/release-1.1.1-orange"
+            alt="Release version"/></a>
+
 # idempotence4j
 
 idempotence4j is a lightweight library that provides support for managing idempotence actions.
@@ -55,9 +59,9 @@ If you're using **Spring Boot** here is a quick way of to add a dependency on **
 
 ```gradle
 dependencies {
-  implementation("com.transferwise.idempotence4j:idempotence4j-spring-boot-starter:1.1.0")
-  implementation("com.transferwise.idempotence4j:idempotence4j-postgres:1.1.0")
-  implementation("com.transferwise.idempotence4j:idempotence4j-metrics:1.1.0")
+  implementation("com.transferwise.idempotence4j:idempotence4j-spring-boot-starter:1.1.1")
+  implementation("com.transferwise.idempotence4j:idempotence4j-postgres:1.1.1")
+  implementation("com.transferwise.idempotence4j:idempotence4j-metrics:1.1.1")
 }
 ```
 Spring boot starter provides auto-discovery for known implementation modules
@@ -65,7 +69,7 @@ and autowires service `Beans`. Otherwise, you can add a dependency on each modul
 
 ```gradle
 dependencies {
-  implementation("com.transferwise.idempotence4j:idempotence4j-core:1.1.0")
+  implementation("com.transferwise.idempotence4j:idempotence4j-core:1.1.1")
 }
 ```
 
@@ -80,7 +84,7 @@ To add PostgresSQL module to your build using Gradle, use the following:
 
 ```gradle
 dependencies {
-  implementation("com.transferwise.idempotence4j:idempotence4j-postgres:1.1.0")
+  implementation("com.transferwise.idempotence4j:idempotence4j-postgres:1.1.1")
 }
 ```
 
