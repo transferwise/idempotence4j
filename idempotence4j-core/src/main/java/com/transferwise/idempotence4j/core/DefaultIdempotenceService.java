@@ -78,7 +78,7 @@ public class DefaultIdempotenceService implements IdempotenceService {
             try (lock) {
                 Action pendingAction = actionRepository.find(actionId).get();
                 if (pendingAction.hasCompleted()) {
-                    return processRetry(action, onRetry, recordType, metrics);
+                    return processRetry(pendingAction, onRetry, recordType, metrics);
                 }
 
                 return runProcedure(action, procedure, toRecord);
