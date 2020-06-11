@@ -2,7 +2,7 @@ package com.transferwise.idempotence4j.postgres
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.transferwise.idempotence4j.core.Action
-import com.transferwise.idempotence4j.core.IdempotenceService
+import com.transferwise.idempotence4j.core.DefaultIdempotenceService
 import com.transferwise.idempotence4j.core.exception.ConflictingActionException
 import com.transferwise.idempotence4j.core.metrics.MetricsPublisher
 import com.transferwise.idempotence4j.core.serializers.json.JsonResultSerializer
@@ -19,7 +19,7 @@ import static com.transferwise.idempotence4j.factory.ActionTestFactory.aResult
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anAction
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anActionId
 
-class IdempotenceServicePostgresIntegrationTest extends IntegrationTest {
+class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
     def transactionManager = new DataSourceTransactionManager(dataSource)
     def jdbcTemplate = new JdbcTemplate(dataSource)
     def lockProvider = Spy(new JdbcPostgresLockProvider(jdbcTemplate))
@@ -28,7 +28,7 @@ class IdempotenceServicePostgresIntegrationTest extends IntegrationTest {
     def metricsPublisher = Mock(MetricsPublisher)
 
     @Subject
-    def service = new IdempotenceService(transactionManager, lockProvider, repository, resultSerializer, metricsPublisher)
+    def service = new DefaultIdempotenceService(transactionManager, lockProvider, repository, resultSerializer, metricsPublisher)
 
     def "under a load of concurrent requests action body should only be executed once"() {
         given:

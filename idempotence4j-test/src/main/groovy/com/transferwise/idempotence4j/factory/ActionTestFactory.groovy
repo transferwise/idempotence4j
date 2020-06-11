@@ -5,7 +5,6 @@ import com.transferwise.idempotence4j.core.ActionId
 import com.transferwise.idempotence4j.core.Result
 import groovy.json.JsonOutput
 import groovy.transform.TupleConstructor
-import junit.framework.TestResult
 
 import java.nio.charset.StandardCharsets
 import java.time.Instant
