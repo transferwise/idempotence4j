@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transferwise.idempotence4j.core.ResultSerializer;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 public class JsonResultSerializer implements ResultSerializer {
     private final ObjectMapper objectMapper;
@@ -19,8 +20,8 @@ public class JsonResultSerializer implements ResultSerializer {
     }
 
     @Override
-    public <T> T deserialize(byte[] payload) throws IOException {
-        return objectMapper.readValue(payload, new TypeReference<T>() {});
+    public <T> T deserialize(byte[] payload, Type type) throws IOException {
+        return objectMapper.readValue(payload, objectMapper.constructType(type));
     }
 
     @Override

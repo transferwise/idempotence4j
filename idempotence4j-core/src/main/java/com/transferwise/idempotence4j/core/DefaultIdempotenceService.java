@@ -12,6 +12,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -50,7 +51,7 @@ public class DefaultIdempotenceService implements IdempotenceService {
      * @param procedure action execution body
      * @param toRecord mapping of procedure result to the model that going to be persisted and provided {@param onRetry}
      */
-    public <S, R> R execute(ActionId actionId, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord) {
+    public <S, R> R execute(ActionId actionId, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Type recordType) {
         final Metrics metrics = new Metrics(actionId);
 
         R result = new MeasuredExecutor()
@@ -58,17 +59,17 @@ public class DefaultIdempotenceService implements IdempotenceService {
             .onUnexpectedError((duration, ex) -> metrics.record(duration, ERROR))
             .onSuccess((duration) -> metrics.record(duration, SUCCESS))
             .onComplete(() -> metricsPublisher.publish(metrics))
-            .submit(() -> execute(actionId, onRetry, procedure, toRecord, metrics));
+            .submit(() -> execute(actionId, onRetry, procedure, toRecord, recordType, metrics));
 
         return result;
     }
 
-    private <S, R> R execute(ActionId actionId, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Metrics metrics) {
+    private <S, R> R execute(ActionId actionId, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Type recordType, Metrics metrics) {
         Action action = newTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW)
             .execute(status -> actionRepository.insertOrGet(new Action(actionId)));
 
         if (action.hasCompleted()) {
-            return processRetry(action, onRetry, metrics);
+            return processRetry(action, onRetry, recordType, metrics);
         }
 
         return newTransaction(TransactionDefinition.PROPAGATION_REQUIRED).execute(status -> {
@@ -77,7 +78,7 @@ public class DefaultIdempotenceService implements IdempotenceService {
             try (lock) {
                 Action pendingAction = actionRepository.find(actionId).get();
                 if (pendingAction.hasCompleted()) {
-                    return processRetry(pendingAction, onRetry, metrics);
+                    return processRetry(action, onRetry, recordType, metrics);
                 }
 
                 return runProcedure(action, procedure, toRecord);
@@ -95,9 +96,9 @@ public class DefaultIdempotenceService implements IdempotenceService {
         return result;
     }
 
-    private <S, R> R processRetry(Action action, Function<S, R> onRetry, Metrics metrics) {
+    private <S, R> R processRetry(Action action, Function<S, R> onRetry, Type recordType, Metrics metrics) {
         metrics.recordRetry();
-        S result = readResult(action);
+        S result = readResult(action, recordType);
         return onRetry.apply(result);
     }
 
@@ -110,11 +111,11 @@ public class DefaultIdempotenceService implements IdempotenceService {
         }
     }
 
-    private <S> S readResult(Action action) {
+    private <S> S readResult(Action action, Type recordType) {
         try {
             S result = null;
             if (action.hasResult()) {
-                result = resultSerializer.deserialize(action.getResult().map(Result::getContent).get());
+                result = resultSerializer.deserialize(action.getResult().map(Result::getContent).get(), recordType);
             }
 
             return result;

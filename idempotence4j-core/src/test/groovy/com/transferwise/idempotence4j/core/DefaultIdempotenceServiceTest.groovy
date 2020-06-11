@@ -1,5 +1,6 @@
 package com.transferwise.idempotence4j.core
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.transferwise.idempotence4j.core.exception.ConflictingActionException
 import com.transferwise.idempotence4j.core.exception.ResultSerializationException
 import com.transferwise.idempotence4j.core.metrics.Metrics
@@ -9,6 +10,7 @@ import com.transferwise.idempotence4j.factory.ActionTestFactory.TestResult
 import spock.lang.Specification
 import spock.lang.Subject
 
+import java.lang.reflect.Type
 import java.util.function.Function
 import java.util.function.Supplier
 
@@ -46,7 +48,7 @@ class DefaultIdempotenceServiceTest extends Specification {
                 return result
             }, { it ->
                 return persistedResult
-            })
+            }, new TypeReference<String>() {})
         then:
             output == result
         and:
@@ -76,14 +78,15 @@ class DefaultIdempotenceServiceTest extends Specification {
             def action = anAction(actionId: actionId, isCompleted: true)
             def result = new Object()
             def persistedResult = aResult()
+            def typeRef = new TypeReference<TestResult>() {}
         and:
             def onRetry = Mock(Function)
             def procedure = Mock(Supplier)
             def toRecord = Mock(Function)
         and:
-            resultSerializer.deserialize(_ as byte[]) >> persistedResult
+            resultSerializer.deserialize(_ as byte[], _ as Type) >> persistedResult
         when:
-            def output = service.execute(actionId, onRetry, procedure, toRecord)
+            def output = service.execute(actionId, onRetry, procedure, toRecord, typeRef)
         then:
             1 * actionRepository.insertOrGet({
                 it.actionId == actionId
@@ -113,7 +116,7 @@ class DefaultIdempotenceServiceTest extends Specification {
         and:
             lockProvider.lock(actionId) >> Optional.empty()
         when:
-            service.execute(actionId, Mock(Function), Mock(Supplier), Mock(Function))
+            service.execute(actionId, Mock(Function), Mock(Supplier), Mock(Function), Mock(Type))
         then:
             1 * metricsPublisher.publish({
                 it.outcome == CONFLICT
@@ -140,7 +143,7 @@ class DefaultIdempotenceServiceTest extends Specification {
                 return result
             }, { it ->
                 return persistedResult
-            })
+            }, new TypeReference<String>() {})
         then:
             1 * metricsPublisher.publish({
                 it.outcome == ERROR
@@ -156,9 +159,9 @@ class DefaultIdempotenceServiceTest extends Specification {
                 it.actionId == actionId
             } as Action) >> anAction(actionId: actionId, isCompleted: true)
         and:
-            resultSerializer.deserialize(_ as byte[]) >> {throw new IOException()}
+            resultSerializer.deserialize(_ as byte[], _ as Type) >> {throw new IOException()}
         when:
-            service.execute(actionId, Mock(Function), Mock(Supplier), Mock(Function))
+            service.execute(actionId, Mock(Function), Mock(Supplier), Mock(Function), Mock(Type))
         then:
             1 * metricsPublisher.publish(_ as Metrics)
             thrown(ResultSerializationException)
