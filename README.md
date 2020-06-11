@@ -86,8 +86,7 @@ dependencies {
 
 ### Flyway
 
-`Postgres` module contains Flyway migration definitions to keep required tables schemas up-to-date
-Below we show both `yaml` and `java` configuration examples:
+`Postgres` module contains Flyway migration definitions to keep required tables schemas up-to-date. Both `yaml` and `java` configuration examples provided below:
 
 ```yaml
 
