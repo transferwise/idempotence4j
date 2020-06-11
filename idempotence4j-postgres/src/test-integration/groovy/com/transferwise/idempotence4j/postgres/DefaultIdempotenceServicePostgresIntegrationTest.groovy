@@ -1,6 +1,8 @@
 package com.transferwise.idempotence4j.postgres
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.transferwise.idempotence4j.core.Action
 import com.transferwise.idempotence4j.core.DefaultIdempotenceService
 import com.transferwise.idempotence4j.core.exception.ConflictingActionException
@@ -11,12 +13,13 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import spock.lang.Subject
 
+import java.lang.reflect.Type
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
+import com.transferwise.idempotence4j.factory.ActionTestFactory.TestResult
 
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.aResult
-import static com.transferwise.idempotence4j.factory.ActionTestFactory.anAction
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anActionId
 
 class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
@@ -24,7 +27,7 @@ class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
     def jdbcTemplate = new JdbcTemplate(dataSource)
     def lockProvider = Spy(new JdbcPostgresLockProvider(jdbcTemplate))
     def repository = Spy(new JdbcPostgresActionRepository(jdbcTemplate))
-    def resultSerializer = new JsonResultSerializer(new ObjectMapper())
+    def resultSerializer = Spy(new JsonResultSerializer(new ObjectMapper().registerModule(new JavaTimeModule())))
     def metricsPublisher = Mock(MetricsPublisher)
 
     @Subject
@@ -33,6 +36,8 @@ class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
     def "under a load of concurrent requests action body should only be executed once"() {
         given:
             def actionId = anActionId()
+            def result = aResult()
+            def typeRef = new TypeReference<TestResult>() {}
         and:
             def numberOfRequests = 100
             def pool = Executors.newFixedThreadPool(numberOfRequests)
@@ -40,12 +45,12 @@ class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
         and:
             def procedure = {
                 executionCount.incrementAndGet()
-                aResult()
+                result
             }
         when:
             numberOfRequests.times {
                 pool.submit({
-                    service.execute(actionId, procedure)
+                    service.execute(actionId, procedure, typeRef)
                 })
             }
         then:
@@ -58,6 +63,7 @@ class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
         given:
             def actionId = anActionId()
             def result = aResult()
+            def typeRef = new TypeReference<TestResult>() {}
         and:
             def numberOfRetryRequests = 100
             def latch = new CountDownLatch(numberOfRetryRequests)
@@ -71,7 +77,7 @@ class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
                     service.execute(actionId, { ->
                         latch.await()
                         return result
-                    })
+                    }, typeRef)
                 } finally {
                     barrier.countDown()
                 }
@@ -80,7 +86,7 @@ class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
         and:
             def retry = {
                 try {
-                    service.execute(actionId, { -> null})
+                    service.execute(actionId, { -> null}, typeRef)
                 } catch(ConflictingActionException ex) {
                     conflictErrorCount.incrementAndGet()
                 } finally {
@@ -106,17 +112,17 @@ class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
     def "should return existing result if has completed before"() {
         given:
             def actionId = anActionId()
-            def action = anAction(actionId: actionId, isCompleted: true)
-        and:
-            repository.insertOrGet(action)
+            def result =  List.of(aResult())
+            def typeRef = new TypeReference<List<TestResult>>() {}
         when:
-            service.execute(actionId, { -> null})
+            service.execute(actionId, { List r -> r}, { -> result}, { List r -> r}, typeRef)
+        and:
+            def retryOutcome = service.execute(actionId, { List r -> r}, { -> result}, { List r -> r}, typeRef)
         then:
-            1 * repository.insertOrGet({ it ->
-                it.actionId == actionId
-            } as Action)
-            0 * lockProvider.lock(actionId)
-            0 * repository.update(action)
+            1 * repository.update(_ as Action)
+            1 * resultSerializer.deserialize(_ as byte[], _ as Type)
+        and:
+            retryOutcome[0] == result[0]
     }
 
     def "should execute action procedure in a transaction context"() {
@@ -125,8 +131,8 @@ class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
         when:
             service.execute(actionId, {
                 assert TransactionSynchronizationManager.isActualTransactionActive()
-                return null
-            })
+                return aResult()
+            }, new TypeReference<TestResult>() {})
         then:
             noExceptionThrown()
     }

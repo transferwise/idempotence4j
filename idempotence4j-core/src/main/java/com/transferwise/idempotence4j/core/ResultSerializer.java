@@ -1,6 +1,7 @@
 package com.transferwise.idempotence4j.core;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 /**
  * An action result serializer/de-serializer.
@@ -13,7 +14,7 @@ import java.io.IOException;
 public interface ResultSerializer {
     <T> byte[] serialize(T result) throws IOException;
 
-    <T> T deserialize(byte[] payload) throws IOException;
+    <T> T deserialize(byte[] payload, Type type) throws IOException;
 
     String getType();
 }

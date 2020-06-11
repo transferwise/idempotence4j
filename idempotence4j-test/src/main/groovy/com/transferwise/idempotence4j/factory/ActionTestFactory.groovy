@@ -4,6 +4,7 @@ import com.transferwise.idempotence4j.core.Action
 import com.transferwise.idempotence4j.core.ActionId
 import com.transferwise.idempotence4j.core.Result
 import groovy.json.JsonOutput
+import groovy.transform.EqualsAndHashCode
 import groovy.transform.TupleConstructor
 
 import java.nio.charset.StandardCharsets
@@ -55,6 +56,7 @@ class ActionTestFactory {
     }
 
     @TupleConstructor()
+    @EqualsAndHashCode
     static class TestResult {
         String name
         Integer age
