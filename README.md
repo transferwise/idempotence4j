@@ -59,9 +59,9 @@ If you're using **Spring Boot** here is a quick way of to add a dependency on **
 
 ```gradle
 dependencies {
-  implementation("com.transferwise.idempotence4j:idempotence4j-spring-boot-starter:1.1.1")
-  implementation("com.transferwise.idempotence4j:idempotence4j-postgres:1.1.1")
-  implementation("com.transferwise.idempotence4j:idempotence4j-metrics:1.1.1")
+  implementation "com.transferwise.idempotence4j:idempotence4j-spring-boot-starter:${project['idempotence4j.version']}"
+  implementation "com.transferwise.idempotence4j:idempotence4j-postgres:${project['idempotence4j.version']}"
+  implementation "com.transferwise.idempotence4j:idempotence4j-metrics:${project['idempotence4j.version']}"
 }
 ```
 Spring boot starter provides auto-discovery for known implementation modules
@@ -69,7 +69,7 @@ and autowires service `Beans`. Otherwise, you can add a dependency on each modul
 
 ```gradle
 dependencies {
-  implementation("com.transferwise.idempotence4j:idempotence4j-core:1.1.1")
+  implementation "com.transferwise.idempotence4j:idempotence4j-core:${project['idempotence4j.version']}"  
 }
 ```
 
@@ -84,7 +84,7 @@ To add PostgresSQL module to your build using Gradle, use the following:
 
 ```gradle
 dependencies {
-  implementation("com.transferwise.idempotence4j:idempotence4j-postgres:1.1.1")
+  implementation "com.transferwise.idempotence4j:idempotence4j-postgres:${project['idempotence4j.version']}"  
 }
 ```
 
@@ -116,3 +116,14 @@ public Flyway getFlyway(dataSource) {
 }
 
 ```
+
+### Metrics
+
+Each action execution collects and publishes metrics. **idempotence4j-metrics** module provides default `io.micrometer` integration and publishes following metrics:
+
+- idempotence4j.executions - **counter** with a set of tags {`type`, `client`, `outcome`}
+- idempotence4j.executions.retries - **counter** with a set of tags {`type`, `client`}
+- idempotence4j.execution.latency - **timer** with a set of tags {`type`, `client`, `outcome`}
+
+We also provide a common `grafana` dashboard [component](https://github.com/transferwise/grafana-dashboards/blob/master/dashboards/src/components/idempotence4j/actions.libsonnet) that you can include into your provisioned dashboard.
+
