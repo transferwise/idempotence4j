@@ -69,7 +69,7 @@ and autowires service `Beans`. Otherwise, you can add a dependency on each modul
 
 ```gradle
 dependencies {
-  implementation "com.transferwise.idempotence4j:idempotence4j-core:${project['idempotence4j.version']}"  
+  implementation "com.transferwise.idempotence4j:idempotence4j-core:${project['idempotence4j.version']}"
 }
 ```
 
@@ -84,11 +84,18 @@ To add PostgresSQL module to your build using Gradle, use the following:
 
 ```gradle
 dependencies {
-  implementation "com.transferwise.idempotence4j:idempotence4j-postgres:${project['idempotence4j.version']}"  
+  implementation "com.transferwise.idempotence4j:idempotence4j-postgres:${project['idempotence4j.version']}"
 }
 ```
 
 ### Flyway
+
+> :exclamation: **_Important:_**  Flyway by default doesn't allow to apply "out of order" migrations, that means
+> if you have already applied a migration with version `3`, adding migration version `1` will cause an error.
+>
+> Since `idempotence4j` is using a timestamp versions it can cause a number of issues, i.e. if in your project you use incremented numeric versions.
+
+Please **only use the following configuration approach** if your flyway configuration has `flyway.outOfOrder` flag enabled, otherwise please create an exact copy of these migrations in your project flyway module.
 
 `Postgres` module contains Flyway migration definitions to keep required tables schemas up-to-date. Both `yaml` and `java` configuration examples provided below:
 
