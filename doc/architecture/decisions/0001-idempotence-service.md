@@ -36,16 +36,6 @@ We require request execution logic and idempotence status update to happen in a 
 That requirement comes at a cost of the client flexibility. Allowing clients to control transactional context
 introduces edge-cases such as a failure to persist idempotency status whereas action has been completed and side effect taken place.
 
-In future though
-
-
-As much as we want to optimize for the flexibility on the client side
-we try to avoid clients to perform validation checks if action has
-
-As much as we want to optimize for the flexibity provided to clients of this library,
-
-We aim to provide as much flexibility to the clients as possible
-
 ## Decision
 
 Provide code idempotence service based on a database approach, specific database integration is pluggable.
