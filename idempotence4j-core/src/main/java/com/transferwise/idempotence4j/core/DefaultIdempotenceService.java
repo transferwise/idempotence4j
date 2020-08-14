@@ -76,7 +76,7 @@ public class DefaultIdempotenceService implements IdempotenceService {
             Lock lock = lockProvider.lock(actionId).orElseThrow(() -> new ConflictingActionException("Request already in progress"));
 
             try (lock) {
-                Action pendingAction = actionRepository.find(actionId).get();
+                Action pendingAction = lock.getLockedAction();
                 if (pendingAction.hasCompleted()) {
                     return processRetry(pendingAction, onRetry, recordType, metrics);
                 }

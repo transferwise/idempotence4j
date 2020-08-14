@@ -27,7 +27,6 @@ class DefaultIdempotenceServiceTest extends Specification {
     def actionRepository = Mock(ActionRepository)
     def resultSerializer = Mock(ResultSerializer)
     def metricsPublisher = Mock(MetricsPublisher)
-    def lock = Mock(Lock)
 
     @Subject
     def service = new DefaultIdempotenceService(platformTransactionManager, lockProvider, actionRepository, resultSerializer, metricsPublisher)
@@ -55,8 +54,7 @@ class DefaultIdempotenceServiceTest extends Specification {
             1 * actionRepository.insertOrGet({
                 it.actionId == actionId
             } as Action) >> action
-            1 * actionRepository.find(actionId) >> Optional.of(action)
-            1 * lockProvider.lock(actionId) >> Optional.of(lock)
+            1 * lockProvider.lock(actionId) >> Optional.of(new NoOpLock(action))
             0 * function.apply(_ as String)
             1 * actionRepository.update({
                 it.actionId == actionId
@@ -70,6 +68,30 @@ class DefaultIdempotenceServiceTest extends Specification {
             1 * metricsPublisher.publish({
                 it.outcome == SUCCESS
             } as Metrics)
+    }
+
+    def "should skip execution if concurrent action completed it first"() {
+        given:
+            def actionId = anActionId()
+            def action = anAction(actionId: actionId)
+            def completedAction = anAction(actionId: actionId, isCompleted: true)
+            def persistedResult = aResult()
+            def typeRef = new TypeReference<TestResult>() {}
+        and:
+            def onRetry = Mock(Function)
+            def procedure = Mock(Supplier)
+            def toRecord = Mock(Function)
+        and:
+            resultSerializer.deserialize(_ as byte[], _ as Type) >> persistedResult
+        when:
+            def output = service.execute(actionId, onRetry, procedure, toRecord, typeRef)
+        then:
+            1 * actionRepository.insertOrGet({
+                it.actionId == actionId
+            } as Action) >> action
+            1 * lockProvider.lock(actionId) >> Optional.of(new NoOpLock(completedAction))
+            0 * procedure.get()
+            0 * toRecord.apply(*_)
     }
 
     def "should return persisted result on subsequent retry calls"() {
@@ -135,7 +157,7 @@ class DefaultIdempotenceServiceTest extends Specification {
                 it.actionId == actionId
             } as Action) >> action
             actionRepository.find(actionId) >> Optional.of(action)
-            lockProvider.lock(actionId) >> Optional.of(lock)
+            lockProvider.lock(actionId) >> Optional.of(new NoOpLock(action))
         and:
             resultSerializer.serialize(persistedResult) >> { throw new IOException() }
         when:
