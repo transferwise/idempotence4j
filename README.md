@@ -1,5 +1,5 @@
-<a href="https://img.shields.io/badge/release-1.1.1-orange">
-        <img src="https://img.shields.io/badge/release-1.1.1-orange"
+<a href="https://img.shields.io/badge/release-1.2.0-orange">
+        <img src="https://img.shields.io/badge/release-1.2.0-orange"
             alt="Release version"/></a>
 
 # idempotence4j
