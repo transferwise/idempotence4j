@@ -12,6 +12,8 @@ ext {
     hikariVersion = '2.5.1'
     flywayVersion = '6.1.4'
     postgresqlVersion = '42.2.5'
+    dbSchedulerVersion = '7.2'
+    cronUtilsVersion = '8.0.0'
 
     testContainersVersion = '1.11.3'
     spockVersion = '1.3-groovy-2.5'
@@ -32,6 +34,10 @@ ext {
         hikari: "com.zaxxer:HikariCP:${hikariVersion}",
         flyway: "org.flywaydb:flyway-core:${flywayVersion}",
         postgresql: "org.postgresql:postgresql:${postgresqlVersion}",
+
+        dbScheduler: "com.github.kagkarlsson:db-scheduler:${dbSchedulerVersion}",
+        dbSchedulerStarter: "com.github.kagkarlsson:db-scheduler-spring-boot-starter:${dbSchedulerVersion}",
+        cronUtils: "com.cronutils:cron-utils:${cronUtilsVersion}",
 
         spock: "org.spockframework:spock-core:${spockVersion}",
         spock_spring: "org.spockframework:spock-spring:${spockVersion}",

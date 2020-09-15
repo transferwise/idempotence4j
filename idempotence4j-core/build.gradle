@@ -1,6 +1,8 @@
 dependencies {
     compile libraries.spring_jdbc
     compile libraries.jackson_datatype
+    compile libraries.dbScheduler
+    compile libraries.cronUtils
 
     testCompile project(':idempotence4j-test')
 }

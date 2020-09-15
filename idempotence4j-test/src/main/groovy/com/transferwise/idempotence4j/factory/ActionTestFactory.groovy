@@ -2,6 +2,7 @@ package com.transferwise.idempotence4j.factory
 
 import com.transferwise.idempotence4j.core.Action
 import com.transferwise.idempotence4j.core.ActionId
+import com.transferwise.idempotence4j.core.ClockKeeper
 import com.transferwise.idempotence4j.core.Result
 import groovy.json.JsonOutput
 import groovy.transform.EqualsAndHashCode
@@ -52,7 +53,7 @@ class ActionTestFactory {
     }
 
     static aResult() {
-        new TestResult("name", 30, Instant.now())
+        new TestResult("name", 30, ClockKeeper.now())
     }
 
     @TupleConstructor()

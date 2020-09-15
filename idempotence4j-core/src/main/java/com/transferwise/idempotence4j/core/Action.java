@@ -18,16 +18,16 @@ public class Action {
 
 	public Action(@NonNull ActionId actionId) {
 		this.actionId = actionId;
-		this.createdAt = Instant.now();
+		this.createdAt = ClockKeeper.now();
 	}
 
 	public void started() {
-		this.lastRunAt = Instant.now();
+		this.lastRunAt = ClockKeeper.now();
 	}
 
     public void completed(Result result) {
 		this.result = result;
-		this.completedAt = Instant.now();
+		this.completedAt = ClockKeeper.now();
 	}
 
 	public boolean hasCompleted() {
