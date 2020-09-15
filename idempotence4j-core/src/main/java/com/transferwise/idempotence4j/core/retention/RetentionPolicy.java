@@ -29,11 +29,11 @@ public class RetentionPolicy {
     @Slf4j
     public static class PurgeJobConfiguration {
         private final String schedule;
-        private final Long batchSize;
+        private final Integer batchSize;
 
         public PurgeJobConfiguration(
             @NonNull String schedule,
-            @NonNull Long batchSize
+            @NonNull Integer batchSize
         ) {
             Preconditions.checkArgument(isScheduleValid(schedule), "Prune schedule is malformed");
             Preconditions.checkArgument(batchSize > 0, "Prune batch-size has to be a positive number");

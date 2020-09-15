@@ -11,3 +11,14 @@ spring:
       connection-timeout: 2000
       maximum-pool-size: 10
 
+idempotence4j:
+  retention:
+    enabled: true
+    period: P0Y0M20D
+    purge:
+      schedule: "* */15 * * * ?"
+      batchSize: 1000
+
+DATASOURCE_URL: jdbc:postgresql://localhost:5432/idempotence4j_db
+DATASOURCE_USERNAME: username
+DATASOURCE_PASSWORD: password

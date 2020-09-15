@@ -5,9 +5,8 @@ import com.transferwise.idempotence4j.core.ActionRepository;
 import lombok.NonNull;
 
 import javax.sql.DataSource;
-import java.io.Closeable;
 
-public class RetentionService implements Closeable {
+public class RetentionService {
     private static final String SCHEDULER_TASK_NAME = "idempotence4j_scheduled_tasks";
 
     private final DataSource dataSource;
@@ -32,11 +31,6 @@ public class RetentionService implements Closeable {
     }
 
     public void shutdown() {
-        this.close();
-    }
-
-    @Override
-    public void close() {
         scheduler.stop();
     }
 }

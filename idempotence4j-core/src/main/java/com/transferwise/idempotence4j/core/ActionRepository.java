@@ -7,5 +7,5 @@ public interface ActionRepository {
     Optional<Action> find(ActionId actionId);
     Action insertOrGet(Action action);
     Action update(Action action);
-    void deleteOlderThan(Instant timestamp, Long batchSize);
+    void deleteOlderThan(Instant timestamp, Integer batchSize);
 }
