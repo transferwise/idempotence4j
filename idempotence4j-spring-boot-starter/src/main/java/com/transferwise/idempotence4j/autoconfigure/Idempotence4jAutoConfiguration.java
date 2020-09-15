@@ -7,6 +7,9 @@ import com.transferwise.idempotence4j.core.IdempotenceService;
 import com.transferwise.idempotence4j.core.LockProvider;
 import com.transferwise.idempotence4j.core.ResultSerializer;
 import com.transferwise.idempotence4j.core.metrics.MetricsPublisher;
+import com.transferwise.idempotence4j.core.retention.RetentionPolicy;
+import com.transferwise.idempotence4j.core.retention.RetentionPolicy.PurgeJobConfiguration;
+import com.transferwise.idempotence4j.core.retention.RetentionService;
 import com.transferwise.idempotence4j.core.serializers.json.JsonResultSerializer;
 import com.transferwise.idempotence4j.metrics.micrometer.MicrometerMetricsPublisher;
 import com.transferwise.idempotence4j.postgres.JdbcPostgresActionRepository;
@@ -17,12 +20,17 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+
+import java.time.Period;
 
 import static com.transferwise.idempotence4j.autoconfigure.Idempotence4jAutoConfiguration.PostgresAutoConfiguration;
 import static com.transferwise.idempotence4j.autoconfigure.Idempotence4jAutoConfiguration.MetricsPublisherAutoConfiguration;
@@ -90,6 +98,29 @@ public class Idempotence4jAutoConfiguration {
         @ConditionalOnMissingBean
         public MetricsPublisher metricPublisher(MeterRegistry meterRegistry) {
             return new MicrometerMetricsPublisher(meterRegistry);
+        }
+    }
+
+    @Configuration
+    @EnableConfigurationProperties
+    public static class RetentionAutoConfiguration {
+        @Bean
+        @ConfigurationProperties(prefix = "idempotence4j.retention")
+        public RetentionProperties retentionProperties() {
+            return new RetentionProperties();
+        }
+
+        @Bean(initMethod = "initialize", destroyMethod = "shutdown")
+        @ConditionalOnProperty(name="idempotence4j.retention.enabled", havingValue="true", matchIfMissing = false)
+        public RetentionService retentionService(DataSource dataSource, ActionRepository actionRepository, RetentionProperties retentionProperties) {
+            RetentionPolicy retentionPolicy = new RetentionPolicy(
+                Period.parse(retentionProperties.getPeriod()),
+                new PurgeJobConfiguration(
+                    retentionProperties.getPurge().getSchedule(),
+                    retentionProperties.getPurge().getBatchSize())
+            );
+
+            return new RetentionService(dataSource, actionRepository, retentionPolicy);
         }
     }
 }

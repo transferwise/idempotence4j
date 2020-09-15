@@ -1,5 +1,5 @@
-<a href="https://img.shields.io/badge/release-1.2.0-orange">
-        <img src="https://img.shields.io/badge/release-1.2.0-orange"
+<a href="https://img.shields.io/badge/release-1.3.0-orange">
+        <img src="https://img.shields.io/badge/release-1.3.0-orange"
             alt="Release version"/></a>
 
 # idempotence4j
@@ -123,6 +123,23 @@ public Flyway getFlyway(dataSource) {
 }
 
 ```
+
+### Retention
+
+By default action **retention** is turned off. You can enable and configure it by specifying following parameters:
+
+```yaml
+idempotence4j:
+  retention:
+    enabled: true
+    period: P0Y0M20D              # ISO-8601 format
+    purge:
+      schedule: "*/15 * * * * ?"  # spring cron format
+      batchSize: 150
+```
+
+
+> :exclamation: **_Important:_**  Please note, if you didn't enable flyway as described in a previous section you need first to define required for `db-scheduled` tables in your schema
 
 ### Metrics
 

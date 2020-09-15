@@ -8,6 +8,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public class JdbcPostgresActionRepository implements ActionRepository {
@@ -20,7 +23,7 @@ public class JdbcPostgresActionRepository implements ActionRepository {
 
 	@Override
 	public Optional<Action> find(ActionId actionId) {
-        MapSqlParameterSource parameters =new MapSqlParameterSource()
+        MapSqlParameterSource parameters = new MapSqlParameterSource()
             .addValue("key", actionId.getKey())
             .addValue("type", actionId.getType())
             .addValue("client", actionId.getClient());
@@ -46,7 +49,24 @@ public class JdbcPostgresActionRepository implements ActionRepository {
 		return action;
 	}
 
-	//@formatter:off
+    @Override
+    public void deleteOlderThan(Instant timestamp, Integer batchSize) {
+        MapSqlParameterSource queryParameters = new MapSqlParameterSource()
+            .addValue("createdAt", Timestamp.from(timestamp))
+            .addValue("limit", batchSize);
+
+        List<ActionId> actionIdList = namedParameterJdbcTemplate.query(FIND_OLDER_THAN_SQL, queryParameters, (rs, rowNum) -> sqlMapper.toId(rs));
+
+        MapSqlParameterSource[] deleteBatchParameters = actionIdList.stream().map(actionId -> new MapSqlParameterSource()
+            .addValue("key", actionId.getKey())
+            .addValue("type", actionId.getType())
+            .addValue("client", actionId.getClient()))
+            .toArray(size -> new MapSqlParameterSource[size]);
+
+        namedParameterJdbcTemplate.batchUpdate(DELETE_SQL, deleteBatchParameters);
+    }
+
+    //@formatter:off
 	private final static String FIND_BY_ID_SQL =
 			"SELECT " +
 				"key, type, client, created_at, last_run_at, completed_at, result, result_type " +
@@ -92,5 +112,21 @@ public class JdbcPostgresActionRepository implements ActionRepository {
 				"completed_at = :completedAt, " +
 				"result = :result, " +
 				"result_type = :resultType";
+
+    private final static String FIND_OLDER_THAN_SQL =
+        "SELECT " +
+            "key, type, client " +
+            "FROM idempotent_action " +
+            "WHERE " +
+            "created_at < :createdAt " +
+            "LIMIT :limit";
+
+    private final static String DELETE_SQL =
+        "DELETE " +
+            "FROM idempotent_action " +
+            "WHERE " +
+            "key = :key " +
+            "AND type = :type " +
+            "AND client = :client";
 	//@formatter:on
 }

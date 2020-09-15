@@ -14,8 +14,7 @@ import static com.transferwise.idempotence4j.jdbc.utils.Hydrator.hydrateField;
 
 public class ActionSqlMapper {
 	public Action toEntity(ResultSet rs) throws SQLException {
-		ActionId actionId = new ActionId(rs.getString("key"), rs.getString("type"), rs.getString("client"));
-		Action action = new Action(actionId);
+		Action action = new Action(toId(rs));
 
 		hydrateResult(action, rs);
 		hydrateInstant(action, rs, "createdAt", "created_at");
@@ -24,6 +23,10 @@ public class ActionSqlMapper {
 
 		return action;
 	}
+
+	public ActionId toId(ResultSet rs) throws SQLException {
+        return new ActionId(rs.getString("key"), rs.getString("type"), rs.getString("client"));
+    }
 
 	public SqlParameterSource toSql(Action action) {
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
