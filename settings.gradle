@@ -4,6 +4,7 @@ include(
     ':idempotence4j-core',
     ':idempotence4j-jdbc',
     ':idempotence4j-postgres',
+    ':idempotence4j-mariadb',
     ':idempotence4j-test',
     ':idempotence4j-spring-boot-starter',
     ':idempotence4j-metrics'
