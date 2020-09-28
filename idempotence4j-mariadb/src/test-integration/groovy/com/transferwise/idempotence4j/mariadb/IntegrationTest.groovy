@@ -40,7 +40,7 @@ class IntegrationTest extends Specification {
     def getFlyway(dataSource) {
         def configuration = new FluentConfiguration()
             .dataSource(dataSource)
-            .locations("filesystem:src/main/resources/db/idempotence4j/postgres")
+            .locations("filesystem:src/main/resources/db/idempotence4j/mariadb")
 
         new Flyway(configuration)
     }
