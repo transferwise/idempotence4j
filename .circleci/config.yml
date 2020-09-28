@@ -11,7 +11,7 @@ references:
           POSTGRES_USER: username
           POSTGRES_PASSWORD: password
       - image: mariadb:10.3.13
-        command: ['--character-set-server=utf8', '--collation-server=utf8_unicode_ci']
+        command: ['--innodb_flush_log_at_trx_commit=2', '--character-set-server=utf8', '--collation-server=utf8_unicode_ci']
         environment:
           MYSQL_DATABASE: idempotence4j_db
           MYSQL_ROOT_PASSWORD: admin

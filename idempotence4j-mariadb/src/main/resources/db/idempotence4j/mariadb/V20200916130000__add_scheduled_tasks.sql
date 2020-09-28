@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS idempotence4j_scheduled_tasks (
     version                 BIGINT          NOT NULL,
 
     PRIMARY KEY (task_name, task_instance)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
