@@ -3,7 +3,6 @@ package com.transferwise.idempotence4j.mariadb;
 import com.transferwise.idempotence4j.core.Action;
 import com.transferwise.idempotence4j.core.ActionId;
 import com.transferwise.idempotence4j.core.ActionRepository;
-import com.transferwise.idempotence4j.jdbc.mapper.ActionSqlMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -15,7 +14,7 @@ import java.util.Optional;
 
 public class JdbcMariaDbActionRepository implements ActionRepository {
 	private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-	private final ActionSqlMapper sqlMapper = new ActionSqlMapper();
+	private final SqlActionMapper sqlMapper = new SqlActionMapper();
 
 	public JdbcMariaDbActionRepository(JdbcTemplate jdbcTemplate) {
 		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
@@ -37,14 +36,14 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
 	public Action insertOrGet(Action action) {
         return find(action.getActionId())
             .orElseGet(() -> {
-                namedParameterJdbcTemplate.update(UPSERT_SQL, sqlMapper.toSql(action));
+                namedParameterJdbcTemplate.update(UPSERT_SQL, sqlMapper.toSql(SqlAction.of(action)));
                 return action;
             });
 	}
 
 	@Override
 	public Action update(Action action) {
-		namedParameterJdbcTemplate.update(UPDATE_SQL, sqlMapper.toSql(action));
+		namedParameterJdbcTemplate.update(UPDATE_SQL, sqlMapper.toSql(SqlAction.of(action)));
 		return action;
 	}
 
@@ -68,7 +67,7 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
     //@formatter:off
 	private final static String FIND_BY_ID_SQL =
 			"SELECT " +
-				"`key`, type, client, created_at, last_run_at, completed_at, result, result_type " +
+				"seq_id, `key`, type, client, created_at, last_run_at, completed_at, result, result_type " +
 			"FROM idempotent_action " +
 			"WHERE " +
 				"`key` = :key " +
@@ -78,8 +77,9 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
 
 	private final static String UPSERT_SQL =
 			"INSERT INTO " +
-				"idempotent_action(`key`, type, client, created_at, last_run_at, completed_at, result, result_type) " +
+				"idempotent_action(seq_id, `key`, type, client, created_at, last_run_at, completed_at, result, result_type) " +
 			"VALUES (" +
+				":seqId, " +
 				":key, " +
 				":type, " +
 				":client, " +
@@ -88,16 +88,17 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
 				":completedAt, " +
 				":result, " +
 				":resultType" +
-                ")" +
+				")" +
 			"ON DUPLICATE KEY UPDATE " +
-                "`key` = `key`, " +
-                "type = type, " +
-                "client = client";
+				"`key` = `key`, " +
+				"type = type, " +
+				"client = client";
 
 	private final static String UPDATE_SQL =
 			"INSERT INTO " +
-				"idempotent_action(`key`, type, client, created_at, last_run_at, completed_at, result, result_type) " +
+				"idempotent_action(seq_id, `key`, type, client, created_at, last_run_at, completed_at, result, result_type) " +
 			"VALUES (" +
+				":seqId, " +
 				":key, " +
 				":type, " +
 				":client, " +
