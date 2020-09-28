@@ -1,5 +1,7 @@
 package com.transferwise.idempotence4j.core;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -8,6 +10,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 @Getter
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
 public class Action {
 	private final ActionId actionId;

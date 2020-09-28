@@ -1,5 +1,5 @@
-<a href="https://img.shields.io/badge/release-1.3.0-orange">
-        <img src="https://img.shields.io/badge/release-1.3.0-orange"
+<a href="https://img.shields.io/badge/release-1.4.0-orange">
+        <img src="https://img.shields.io/badge/release-1.4.0-orange"
             alt="Release version"/></a>
 
 # idempotence4j
@@ -14,7 +14,8 @@ All actions are persisted to a database and it's expected that client's only goi
 idempotence4j provides several modules:
 
 - **idempotence4j-core** - exposes main API and defines action execution strategy
-- **idempotence4j-postgres** - `PostgreSQL` integration, defines flyway migrations, contains implementation for action repository, locking
+- **idempotence4j-postgres** - `PostgreSQL` integration, defines flyway migrations, contains PostgreSQL implementation for action repository and locking
+- **idempotence4j-mariadb** - `MariaDb` integration, defines flyway migrations, contains MariaDb implementation for action repository and locking
 - **idempotence4j-metrics** - publishes metrics to `io.micrometer` registry
 - **idempotence4j-spring-boot-starter** - auto configuration for `IdempotenceService` with automatic discovery of DB implementation module
 
@@ -76,7 +77,7 @@ dependencies {
 ## Database modules
 
 idempotence4j comes with a set of database-specific implementations.
-For now, the library supports `PostgresSQL` only, `MariaDB` is the next on the roadmap.
+For now, the library supports only `PostgresSQL` and `MariaDB`.
 
 ### PostgresSQL Module
 
@@ -85,6 +86,16 @@ To add PostgresSQL module to your build using Gradle, use the following:
 ```gradle
 dependencies {
   implementation "com.transferwise.idempotence4j:idempotence4j-postgres:${project['idempotence4j.version']}"
+}
+```
+
+### MariaDb Module
+
+To add MariaDb module to your build using Gradle, use the following:
+
+```gradle
+dependencies {
+  implementation "com.transferwise.idempotence4j:idempotence4j-mariadb:${project['idempotence4j.version']}"
 }
 ```
 

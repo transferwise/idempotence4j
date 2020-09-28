@@ -11,6 +11,8 @@ import com.transferwise.idempotence4j.core.retention.RetentionPolicy;
 import com.transferwise.idempotence4j.core.retention.RetentionPolicy.PurgeJobConfiguration;
 import com.transferwise.idempotence4j.core.retention.RetentionService;
 import com.transferwise.idempotence4j.core.serializers.json.JsonResultSerializer;
+import com.transferwise.idempotence4j.mariadb.JdbcMariaDbActionRepository;
+import com.transferwise.idempotence4j.mariadb.JdbcMariaDbLockProvider;
 import com.transferwise.idempotence4j.metrics.micrometer.MicrometerMetricsPublisher;
 import com.transferwise.idempotence4j.postgres.JdbcPostgresActionRepository;
 import com.transferwise.idempotence4j.postgres.JdbcPostgresLockProvider;
@@ -87,6 +89,23 @@ public class Idempotence4jAutoConfiguration {
         @ConditionalOnMissingBean
         public LockProvider postgresLockProvider(DataSource dataSource) {
             return new JdbcPostgresLockProvider(new JdbcTemplate(dataSource));
+        }
+    }
+
+    @Configuration
+    @ConditionalOnClass({ JdbcMariaDbActionRepository.class, JdbcMariaDbLockProvider.class })
+    public static class MariaDbAutoConfiguration {
+
+        @Bean
+        @ConditionalOnMissingBean
+        public ActionRepository postgresActionRepository(DataSource dataSource) {
+            return new JdbcMariaDbActionRepository(new JdbcTemplate(dataSource));
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public LockProvider postgresLockProvider(DataSource dataSource) {
+            return new JdbcMariaDbLockProvider(new JdbcTemplate(dataSource));
         }
     }
 

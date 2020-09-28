@@ -12,6 +12,7 @@ ext {
     hikariVersion = '2.5.1'
     flywayVersion = '6.1.4'
     postgresqlVersion = '42.2.5'
+    mariaDbVersion = '2.5.2'
     dbSchedulerVersion = '7.2'
     cronUtilsVersion = '8.0.0'
 
@@ -34,6 +35,7 @@ ext {
         hikari: "com.zaxxer:HikariCP:${hikariVersion}",
         flyway: "org.flywaydb:flyway-core:${flywayVersion}",
         postgresql: "org.postgresql:postgresql:${postgresqlVersion}",
+        mariadb: "org.mariadb.jdbc:mariadb-java-client:${mariaDbVersion}",
 
         dbScheduler: "com.github.kagkarlsson:db-scheduler:${dbSchedulerVersion}",
         dbSchedulerStarter: "com.github.kagkarlsson:db-scheduler-spring-boot-starter:${dbSchedulerVersion}",
@@ -44,6 +46,7 @@ ext {
         spock_containers: "com.transferwise:spock-containers-runner:${spockContainersVersion}",
         test_containers: "org.testcontainers:testcontainers:${testContainersVersion}",
         postgres_test_container: "org.testcontainers:postgresql:${testContainersVersion}",
+        mariadb_test_container: "org.testcontainers:mariadb:${testContainersVersion}",
         junit: "junit:junit:${junitVersion}"
 
     ]

@@ -65,14 +65,14 @@ public class DefaultIdempotenceService implements IdempotenceService {
     }
 
     private <S, R> R execute(ActionId actionId, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Type recordType, Metrics metrics) {
-        Action action = newTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW)
+        Action action = newTransaction(getTransactionName("upsert"), TransactionDefinition.PROPAGATION_REQUIRES_NEW)
             .execute(status -> actionRepository.insertOrGet(new Action(actionId)));
 
         if (action.hasCompleted()) {
             return processRetry(action, onRetry, recordType, metrics);
         }
 
-        return newTransaction(TransactionDefinition.PROPAGATION_REQUIRED).execute(status -> {
+        return newTransaction(getTransactionName("procedure"), TransactionDefinition.PROPAGATION_REQUIRED).execute(status -> {
             Lock lock = lockProvider.lock(actionId).orElseThrow(() -> new ConflictingActionException("Request already in progress"));
 
             try (lock) {
@@ -124,9 +124,14 @@ public class DefaultIdempotenceService implements IdempotenceService {
         }
     }
 
-    private TransactionTemplate newTransaction(int propagationLevel) {
+    private TransactionTemplate newTransaction(String name, int propagationLevel) {
         TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+        transactionTemplate.setName(name);
         transactionTemplate.setPropagationBehavior(propagationLevel);
         return transactionTemplate;
+    }
+
+    private String getTransactionName(String action) {
+        return DefaultIdempotenceService.class.getName() + ".execute_" + action;
     }
 }

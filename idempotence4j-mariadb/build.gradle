@@ -1,0 +1,30 @@
+plugins {
+	id 'io.spring.dependency-management' version "1.0.7.RELEASE"
+}
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.unbroken-dome.test-sets'
+
+dependencyManagement {
+	imports {
+		mavenBom(libraries.spring_boot)
+	}
+}
+
+dependencies {
+	compile project(':idempotence4j-core')
+	compile project(':idempotence4j-jdbc')
+
+	compile 'org.springframework:spring-jdbc'
+	compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
+
+	testCompile project(':idempotence4j-test')
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	integrationTestImplementation libraries.hikari
+	integrationTestImplementation libraries.flyway
+	integrationTestImplementation libraries.mariadb
+	integrationTestImplementation libraries.test_containers
+	integrationTestImplementation libraries.mariadb_test_container
+	integrationTestImplementation libraries.spock_spring
+	integrationTestImplementation libraries.spock_containers
+}
