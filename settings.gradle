@@ -7,5 +7,6 @@ include(
     ':idempotence4j-mariadb',
     ':idempotence4j-test',
     ':idempotence4j-spring-boot-starter',
-    ':idempotence4j-metrics'
+    ':idempotence4j-metrics',
+    ':idempotence4j-benchmarks'
 )

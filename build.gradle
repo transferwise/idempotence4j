@@ -5,11 +5,13 @@ wrapper {
 buildscript {
 	repositories {
 		maven { url "https://arti.tw.ee/artifactory/libs-release" }
+        maven { url "https://jitpack.io" }
 		mavenLocal()
 	}
 	dependencies {
 		classpath 'net.researchgate:gradle-release:2.8.1'
 		classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:2.1.1'
+        classpath "com.avast.gradle:gradle-docker-compose-plugin:0.12.1"
 	}
 }
 

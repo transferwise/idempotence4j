@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+  mariadb:
+    image: mariadb:10.3
+    hostname: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: idempotence4j_db
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_USER: username
+      MYSQL_PASSWORD: password
+    command: "mysqld --ssl=0
+    --character-set-server=utf8mb4
+    --collation-server=utf8mb4_unicode_ci --transaction-isolation=READ-COMMITTED --innodb_autoinc_lock_mode=2"
+  postgres:
+    image: postgres:10
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: idempotence4j_db
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+    command: -c 'max_connections=200'
