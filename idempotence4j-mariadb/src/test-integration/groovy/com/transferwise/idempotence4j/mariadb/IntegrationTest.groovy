@@ -1,5 +1,6 @@
 package com.transferwise.idempotence4j.mariadb
 
+import com.transferwise.idempotence4j.utils.PropertiesLoader
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import groovy.sql.Sql
