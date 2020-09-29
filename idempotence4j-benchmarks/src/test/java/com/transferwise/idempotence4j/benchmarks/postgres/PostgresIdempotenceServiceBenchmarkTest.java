@@ -1,4 +1,4 @@
-package com.transferwise.idempotence4j.benchmarks;
+package com.transferwise.idempotence4j.benchmarks.postgres;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +38,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 @Measurement(iterations = 5, time = 1)
@@ -66,12 +67,13 @@ public class PostgresIdempotenceServiceBenchmarkTest {
         volatile Flyway flyway;
 
         @Setup
-        public void setup() throws IOException {
+        public void setup() throws IOException, ExecutionException, InterruptedException {
             this.dataSource = getDataSource(PropertiesLoader.loadProperties("datasource.properties"));
             this.flyway = getFlyway(dataSource);
             this.idempotenceService = getIdempotenceService(dataSource);
 
             this.flyway.migrate();
+            PsqlDataGenerator.generateActions(dataSource, 1_000_000);
         }
 
         @TearDown

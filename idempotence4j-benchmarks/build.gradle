@@ -20,6 +20,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'com.github.mp911de.microbenchmark-runner:microbenchmark-runner-junit5:0.2.0.RELEASE'
     testImplementation 'com.github.mp911de.microbenchmark-runner:microbenchmark-runner-extras:0.2.0.RELEASE'
+    testImplementation 'de.bytefish.pgbulkinsert:pgbulkinsert-core:7.0.1'
+    testImplementation 'de.bytefish.pgbulkinsert:pgbulkinsert-rowwriter:7.0.1'
 
     testImplementation project(':idempotence4j-core')
     testImplementation project(':idempotence4j-postgres')
