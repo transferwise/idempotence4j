@@ -1,5 +1,6 @@
 package com.transferwise.idempotence4j.benchmarks.postgres;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import de.bytefish.pgbulkinsert.row.SimpleRowWriter;
 import de.bytefish.pgbulkinsert.util.PostgreSqlUtils;
 import org.postgresql.PGConnection;
@@ -8,7 +9,6 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +43,7 @@ public class PsqlDataGenerator {
             for(int rowIdx = 0; rowIdx < rows; rowIdx++) {
 
                 writer.startRow((row) -> {
-                    row.setText("key", UUID.randomUUID().toString());
+                    row.setText("key", UuidCreator.getTimeOrdered().toString());
                     row.setText("type", "SOME_ACTION");
                     row.setText("client", "merchant");
                     row.setTimeStamp("created_at", LocalDateTime.MIN);

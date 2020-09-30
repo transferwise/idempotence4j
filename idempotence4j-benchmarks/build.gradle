@@ -22,6 +22,7 @@ dependencies {
     testImplementation 'com.github.mp911de.microbenchmark-runner:microbenchmark-runner-extras:0.2.0.RELEASE'
     testImplementation 'de.bytefish.pgbulkinsert:pgbulkinsert-core:7.0.1'
     testImplementation 'de.bytefish.pgbulkinsert:pgbulkinsert-rowwriter:7.0.1'
+    testImplementation 'com.github.f4b6a3:uuid-creator:2.7.10'
 
     testImplementation project(':idempotence4j-core')
     testImplementation project(':idempotence4j-postgres')

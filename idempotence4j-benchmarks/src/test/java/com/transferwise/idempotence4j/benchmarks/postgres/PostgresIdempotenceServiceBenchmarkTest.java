@@ -3,6 +3,7 @@ package com.transferwise.idempotence4j.benchmarks.postgres;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.f4b6a3.uuid.UuidCreator;
 import com.transferwise.idempotence4j.core.ActionId;
 import com.transferwise.idempotence4j.core.DefaultIdempotenceService;
 import com.transferwise.idempotence4j.core.IdempotenceService;
@@ -31,6 +32,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.results.format.ResultFormatType;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -57,11 +59,14 @@ import java.util.concurrent.TimeUnit;
 public class PostgresIdempotenceServiceBenchmarkTest {
 
     @Benchmark
-    public void noOp(BenchmarkContext context) throws IOException {
-        ActionId actionId = new ActionId(UUID.randomUUID(), "ADD_ACTION", "idempotence4j");
-        context.idempotenceService.execute(actionId, () -> {
+    public void executeIdempotentAction(BenchmarkContext context, Blackhole blackhole) {
+        ActionId actionId = new ActionId(UuidCreator.getTimeOrdered(), "ADD_ACTION", "idempotence4j");
+        Result result = context.idempotenceService.execute(actionId, () -> {
+            Blackhole.consumeCPU(100);
             return new Result(UUID.randomUUID().toString());
         }, new TypeReference<Result>(){});
+
+        blackhole.consume(result);
     }
 
     public static void main(String[] args) throws RunnerException {
