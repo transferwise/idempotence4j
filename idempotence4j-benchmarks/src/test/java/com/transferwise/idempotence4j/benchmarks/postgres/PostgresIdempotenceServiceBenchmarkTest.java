@@ -24,12 +24,18 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.results.format.ResultFormatType;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
@@ -45,7 +51,7 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 10, time = 1)
 @Fork(2)
 @BenchmarkMode(Mode.Throughput)
-@OutputTimeUnit(TimeUnit.MICROSECONDS)
+@OutputTimeUnit(TimeUnit.SECONDS)
 @Threads(Threads.MAX)
 @Microbenchmark
 public class PostgresIdempotenceServiceBenchmarkTest {
@@ -58,6 +64,13 @@ public class PostgresIdempotenceServiceBenchmarkTest {
         }, new TypeReference<Result>(){});
     }
 
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder().include(".*" + PostgresIdempotenceServiceBenchmarkTest.class.getSimpleName() + ".*")
+            .resultFormat(ResultFormatType.JSON)
+            .build();
+
+        new Runner(opt).run();
+    }
 
     @State(Scope.Benchmark)
     public static class BenchmarkContext {
@@ -66,6 +79,9 @@ public class PostgresIdempotenceServiceBenchmarkTest {
         volatile DataSource dataSource;
         volatile Flyway flyway;
 
+        @Param({"1000", "100000", "1000000", "5000000"})
+        static int dbSize;
+
         @Setup
         public void setup() throws IOException, ExecutionException, InterruptedException {
             this.dataSource = getDataSource(PropertiesLoader.loadProperties("datasource.properties"));
@@ -73,7 +89,7 @@ public class PostgresIdempotenceServiceBenchmarkTest {
             this.idempotenceService = getIdempotenceService(dataSource);
 
             this.flyway.migrate();
-            PsqlDataGenerator.generateActions(dataSource, 1_000_000);
+            PsqlDataGenerator.generateActions(dataSource, dbSize);
         }
 
         @TearDown

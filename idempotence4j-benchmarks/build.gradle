@@ -32,6 +32,9 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    onlyIf {
+        System.getenv("CI") != "true"
+    }
 }
 
 if (System.getenv("CI") != "true") {
