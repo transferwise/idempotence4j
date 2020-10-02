@@ -36,6 +36,7 @@ public class PsqlDataGenerator {
 
         CompletableFuture allOf = CompletableFuture.allOf(completables);
         allOf.get();
+        pool.shutdownNow();
     }
 
     private static void batchInsert(PGConnection pgConnection, SimpleRowWriter.Table table, int rows) throws SQLException {

@@ -55,7 +55,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-@Measurement(iterations = 5, time = 1)
+@Measurement(iterations = 10, time = 1)
 @Warmup(iterations = 10, time = 1)
 @Fork(2)
 @BenchmarkMode({Mode.Throughput, Mode.SampleTime})
