@@ -25,9 +25,9 @@ import static com.transferwise.idempotence4j.factory.ActionTestFactory.anActionI
 class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
     def transactionManager = new DataSourceTransactionManager(dataSource)
     def jdbcTemplate = new JdbcTemplate(dataSource)
-    def lockProvider = Spy(new JdbcPostgresLockProvider(jdbcTemplate))
-    def repository = Spy(new JdbcPostgresActionRepository(jdbcTemplate))
-    def resultSerializer = Spy(new JsonResultSerializer(new ObjectMapper().registerModule(new JavaTimeModule())))
+    def lockProvider = new JdbcPostgresLockProvider(jdbcTemplate)
+    def repository = new JdbcPostgresActionRepository(jdbcTemplate)
+    def resultSerializer = new JsonResultSerializer(new ObjectMapper().registerModule(new JavaTimeModule()))
     def metricsPublisher = Mock(MetricsPublisher)
 
     @Subject
@@ -114,6 +114,10 @@ class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
             def actionId = anActionId()
             def result =  List.of(aResult())
             def typeRef = new TypeReference<List<TestResult>>() {}
+        and:
+            repository = Spy(repository)
+            resultSerializer = Spy(resultSerializer)
+            service = new DefaultIdempotenceService(transactionManager, lockProvider, repository, resultSerializer, metricsPublisher)
         when:
             service.execute(actionId, { List r -> r}, { -> result}, { List r -> r}, typeRef)
         and:
