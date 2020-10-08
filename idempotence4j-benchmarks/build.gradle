@@ -1,50 +1,40 @@
-plugins {
-	id 'io.spring.dependency-management' version "1.0.7.RELEASE"
-}
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.unbroken-dome.test-sets'
 apply plugin: 'docker-compose'
 
-dependencyManagement {
-	imports {
-		mavenBom libraries.spring_boot
-	}
-}
-
-dependencies {
-    compile libraries.spring_jdbc
-    compile 'com.github.f4b6a3:uuid-creator:2.7.10'
-
-    testImplementation 'org.openjdk.jmh:jmh-core:1.25.2'
-    testAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.25.2'
-
-    testCompile project(':idempotence4j-test')
-    testImplementation 'org.springframework:spring-jdbc'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'com.github.mp911de.microbenchmark-runner:microbenchmark-runner-junit5:0.2.0.RELEASE'
-    testImplementation 'com.github.mp911de.microbenchmark-runner:microbenchmark-runner-extras:0.2.0.RELEASE'
-    testImplementation 'de.bytefish.pgbulkinsert:pgbulkinsert-core:7.0.1'
-    testImplementation 'de.bytefish.pgbulkinsert:pgbulkinsert-rowwriter:7.0.1'
-
-    testImplementation project(':idempotence4j-core')
-    testImplementation project(':idempotence4j-postgres')
-    testImplementation libraries.hikari
-    testImplementation libraries.flyway
-    testImplementation libraries.postgresql
-}
-
-test {
-    useJUnitPlatform()
-    onlyIf {
-        System.getenv("CI") != "true"
+sourceSets {
+    jmh {
+        java.srcDirs = ['src/jmh/java']
+        resources.srcDirs = ['src/jmh/resources']
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.runtimeClasspath
     }
 }
 
-if (System.getenv("CI") != "true") {
-    dockerCompose.isRequiredBy test
+dependencies {
+    implementation project(':idempotence4j-core')
+    implementation project(':idempotence4j-postgres')
+
+    implementation libraries.spring_jdbc
+    implementation 'com.github.f4b6a3:uuid-creator:2.7.10'
+    implementation libraries.hikari
+    implementation libraries.flyway
+    implementation libraries.postgresql
+
+    jmhImplementation libraries.hikari
+    jmhImplementation libraries.flyway
+    jmhImplementation libraries.postgresql
+    jmhImplementation 'de.bytefish.pgbulkinsert:pgbulkinsert-core:7.0.1'
+    jmhImplementation 'de.bytefish.pgbulkinsert:pgbulkinsert-rowwriter:7.0.1'
+    jmhImplementation 'org.openjdk.jmh:jmh-core:1.25.2'
+    jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.25.2'
 }
+
 dockerCompose {
-    useComposeFiles = ["src/test/resources/docker-compose.yml"]
+    useComposeFiles = ["src/jmh/resources/docker-compose.yml"]
     stopContainers = true
     removeContainers = true
 }
+
+task jmh(type: JavaExec, dependsOn: testClasses) {
+    main = 'org.openjdk.jmh.Main'
+    classpath = sourceSets.jmh.compileClasspath + sourceSets.jmh.runtimeClasspath
+}
+dockerCompose.isRequiredBy jmh

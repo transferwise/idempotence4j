@@ -41,3 +41,7 @@ services:
       -c 'checkpoint_completion_target=0.9'
       -c 'default_statistics_target=100'
     "
+      #non-durable settings
+      #-c 'fsync=off'
+      #-c 'synchronous_commit=off'
+      #-c 'full_page_writes=off'
