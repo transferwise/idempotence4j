@@ -1,0 +1,63 @@
+server:
+  port: 12345
+  tomcat:
+    mbeanregistry:
+      enabled: true
+management:
+  server:
+    port: 12345
+  endpoint:
+    health:
+      cache:
+        time-to-live: PT2S
+    healthstate:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: ["health", "liveness", "info", "prometheus"]
+  health:
+    binders:
+      enabled: false
+
+spring:
+  profiles:
+    active: development
+  jmx:
+    enabled: true
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_SERVICE_USERNAME}
+    password: ${DATASOURCE_SERVICE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    platform: postgres
+    initialization-mode: never
+    continue-on-error: false
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 2000
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+  flyway:
+    table: flyway_schema_history
+    password: ${DATASOURCE_FLYWAY_PASSWORD}
+    user: ${DATASOURCE_FLYWAY_USERNAME}
+    url: ${DATASOURCE_URL}
+    locations: classpath:db/migration, classpath:db/idempotence4j/postgres
+
+DATASOURCE_URL: jdbc:postgresql://${ENV_DB_HOST}:${ENV_DB_PORT}/${ENV_DB_DATABASE_NAME}
+DATASOURCE_SERVICE_USERNAME: ${ENV_DB_SERVICE_USER}
+DATASOURCE_FLYWAY_USERNAME: ${ENV_DB_FLYWAY_USER}
+DATASOURCE_SERVICE_PASSWORD: ${ENV_DB_SERVICE_PASSWORD}
+DATASOURCE_FLYWAY_PASSWORD: ${ENV_DB_FLYWAY_PASSWORD}
+
+ENV_DB_HOST: localhost
+ENV_DB_PORT: 5432
+ENV_DB_DATABASE_NAME: idempotence4j_db
+ENV_DB_SERVICE_USER: username
+ENV_DB_FLYWAY_USER: username
+ENV_DB_SERVICE_PASSWORD: password
+ENV_DB_FLYWAY_PASSWORD: password
