@@ -31,12 +31,12 @@ dependencies {
     implementation libraries.postgresql
     implementation libraries.micrometer
     implementation libraries.micrometer_prometheus
-    implementation 'com.github.f4b6a3:uuid-creator:2.7.10'
+    implementation libraries.uuidCreator
 
-    jmhImplementation 'de.bytefish.pgbulkinsert:pgbulkinsert-core:7.0.1'
-    jmhImplementation 'de.bytefish.pgbulkinsert:pgbulkinsert-rowwriter:7.0.1'
-    jmhImplementation 'org.openjdk.jmh:jmh-core:1.25.2'
-    jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.25.2'
+    jmhImplementation libraries.pgbulkinsertCore
+    jmhImplementation libraries.pgbulkinsertWriter
+    jmhImplementation libraries.jmhCore
+    jmhAnnotationProcessor libraries.jmhGenerator
 }
 
 dockerCompose {
