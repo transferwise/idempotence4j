@@ -1,0 +1,47 @@
+version: '3.7'
+
+services:
+  mariadb:
+    image: mariadb:10.3
+    hostname: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: idempotence4j_db
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_USER: username
+      MYSQL_PASSWORD: password
+    command: "mysqld --ssl=0
+    --character-set-server=utf8mb4
+    --collation-server=utf8mb4_unicode_ci --transaction-isolation=READ-COMMITTED --innodb_autoinc_lock_mode=2"
+  postgres:
+    image: postgres:12
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: idempotence4j_db
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+    command: "
+      -c 'wal_compression=on'
+      -c 'max_connections=200'
+      -c 'shared_buffers=512MB'
+      -c 'effective_cache_size=1536MB'
+      -c 'maintenance_work_mem=32MB'
+      -c 'work_mem=4MB'
+      -c 'max_worker_processes=4'
+      -c 'max_parallel_workers_per_gather=2'
+      -c 'max_parallel_workers=4'
+      -c 'max_parallel_maintenance_workers=2'
+      -c 'shared_preload_libraries=pg_stat_statements'
+      -c 'effective_io_concurrency=200'
+      -c 'random_page_cost=1.1'
+      -c 'min_wal_size=2GB'
+      -c 'max_wal_size=8GB'
+      -c 'checkpoint_completion_target=0.9'
+      -c 'default_statistics_target=100'
+    "
+      #non-durable settings
+      #-c 'fsync=off'
+      #-c 'synchronous_commit=off'
+      #-c 'full_page_writes=off'

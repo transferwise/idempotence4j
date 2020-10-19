@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: idempotence4j-benchmark
+  jmx:
+    enabled: true

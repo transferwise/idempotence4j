@@ -3,8 +3,9 @@
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
 ## [Unreleased]
+- Non-transactional execution strategy
 - Schema evolution
-- UpstreamAction reference
+- Result payload compression
 - ADR on Postgres module with details on implementation specifics (MVCC, etc.)
 
 ## 1.4.0 - 2020-09-25

@@ -1,0 +1,64 @@
+apply plugin: 'docker-compose'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.springframework.boot'
+
+dependencyManagement {
+    imports {
+        mavenBom libraries.spring_boot
+    }
+}
+
+sourceSets {
+    jmh {
+        java.srcDirs = ['src/jmh/java']
+        resources.srcDirs = ['src/jmh/resources']
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.runtimeClasspath
+    }
+}
+
+dependencies {
+    implementation project(':idempotence4j-core')
+    implementation project(':idempotence4j-postgres')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-jdbc"
+    implementation project(':idempotence4j-spring-boot-starter')
+
+    implementation libraries.spring_jdbc
+    implementation libraries.hikari
+    implementation libraries.flyway
+    implementation libraries.postgresql
+    implementation libraries.micrometer
+    implementation libraries.micrometer_prometheus
+    implementation libraries.uuidCreator
+
+    jmhImplementation libraries.pgbulkinsertCore
+    jmhImplementation libraries.pgbulkinsertWriter
+    jmhImplementation libraries.jmhCore
+    jmhAnnotationProcessor libraries.jmhGenerator
+}
+
+springBoot {
+    buildInfo()
+}
+
+dockerCompose {
+    useComposeFiles = ["src/jmh/resources/docker-compose.yml"]
+    stopContainers = true
+    removeContainers = true
+}
+
+task jmh(type: JavaExec, dependsOn: testClasses) {
+    main = 'org.openjdk.jmh.Main'
+    classpath = sourceSets.jmh.compileClasspath + sourceSets.jmh.runtimeClasspath
+}
+dockerCompose.isRequiredBy jmh
+
+jar {
+    enabled = true
+}
+
+bootJar {
+    classifier = 'application'
+}

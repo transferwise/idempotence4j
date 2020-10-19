@@ -1,6 +1,3 @@
-plugins {
-	id 'io.spring.dependency-management' version "1.0.7.RELEASE"
-}
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.unbroken-dome.test-sets'
 
