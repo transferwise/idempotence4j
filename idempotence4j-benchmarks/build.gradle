@@ -39,6 +39,10 @@ dependencies {
     jmhAnnotationProcessor libraries.jmhGenerator
 }
 
+springBoot {
+    buildInfo()
+}
+
 dockerCompose {
     useComposeFiles = ["src/jmh/resources/docker-compose.yml"]
     stopContainers = true
@@ -50,3 +54,11 @@ task jmh(type: JavaExec, dependsOn: testClasses) {
     classpath = sourceSets.jmh.compileClasspath + sourceSets.jmh.runtimeClasspath
 }
 dockerCompose.isRequiredBy jmh
+
+jar {
+    enabled = true
+}
+
+bootJar {
+    classifier = 'application'
+}

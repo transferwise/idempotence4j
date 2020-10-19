@@ -4,7 +4,7 @@
 
 # idempotence4j
 
-idempotence4j is a lightweight library that provides support for managing idempotence actions.
+idempotence4j is a lightweight library that provides support for handling idempotent actions.
 
 All actions are persisted to a database and it's expected that client's only going to use database master node
  to avoid any possible issues caused by the replication lag.
