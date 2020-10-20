@@ -24,7 +24,8 @@ allprojects {
 	apply plugin: 'maven-publish'
 	apply plugin: 'net.researchgate.release'
 	apply plugin: 'org.unbroken-dome.test-sets'
-    apply from: "${rootDir}/libraries.gradle"
+	apply from: "${rootDir}/libraries.gradle"
+	apply from: "${rootDir}/publish.gradle"
 
 	version = getVersion(project)
 
@@ -48,7 +49,7 @@ allprojects {
         compileOnly libraries.lombok
         compileOnly libraries.groovy
 
-        compile libraries.slf4j
+        implementation libraries.slf4j
 
         testImplementation libraries.groovy
         testImplementation libraries.junit
@@ -84,67 +85,18 @@ allprojects {
 			exceptionFormat = 'full'
 		}
 	}
-
-	publishing {
-		publications {
-			main(MavenPublication) {
-				from components.java
-				artifact sourcesJar
-			}
-		}
-		repositories {
-			maven {
-				url getArtifactoryUrl('libs')
-				name 'libs'
-				credentials {
-					username = System.getenv('ARTIFACTORY_USER')
-					password = System.getenv('ARTIFACTORY_PASSWORD')
-				}
-			}
-			mavenLocal()
-		}
-	}
-
-	release {
-		tagTemplate = '$name-$version'
-		preTagCommitMessage = "[ci skip] pre tag commit: "
-		tagCommitMessage = "[ci skip] creating tag: "
-		newVersionCommitMessage = "[ci skip] new version commit: "
-		failOnUnversionedFiles = false
-		revertOnFail = true
-		failOnCommitNeeded = false
-		buildTasks = ['assemble']
-		snapshotSuffix = ""
-	}
-
 	check.dependsOn integrationTest
 	afterReleaseBuild.dependsOn publish
 
-    ext.isRunningOnCI = {
-        System.getenv("CI") == "true"
-    }
-
-}
-
-static getArtifactoryUrl(libraryType) {
-	def releaseType = branchName() == 'master' ? 'release' : 'snapshot'
-	"https://arti.tw.ee/artifactory/${libraryType}-${releaseType}-local"
-}
-
-static branchName() {
-	'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
+	ext.isRunningOnCI = {
+		System.getenv("CI") == "true"
+	}
 }
 
 static getVersion(project) {
-	branchName() == 'master' ? project.version : project.version + '-SNAPSHOT'
+    branchName() == 'master' ? project.version : project.version + '-SNAPSHOT'
 }
 
-task addTag(type: Exec) {
-    commandLine 'git', 'tag', "$project.name-$project.version", '-m', "$project.name-$project.version"
+static branchName() {
+    'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
 }
-task pushTag(type: Exec) {
-    commandLine 'git', 'push', 'origin', "$project.name-$project.version"
-}
-
-pushTag.dependsOn addTag
-pushTag.mustRunAfter publish

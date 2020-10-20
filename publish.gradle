@@ -1,0 +1,76 @@
+apply plugin: "maven-publish"
+
+ext.projectName = "idempotence4j"
+ext.projectDescription = "Lightweight library for handling idempotent actions"
+ext.artifactoryUser = project.hasProperty("artifactoryUser") ? project.artifactoryUser : System.getenv('ARTIFACTORY_USER') as String
+ext.artifactoryPassword = project.hasProperty("artifactoryPassword") ? project.artifactoryPassword : System.getenv('ARTIFACTORY_PASSWORD') as String
+ext.projectScmUrl = "https://github.com/transferwise/${projectName}"
+ext.projectScmConnection = "scm:git:git://github.com/transferwise/${projectName}.git"
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = projectName
+                description = projectDescription
+                url = projectScmUrl
+                packaging = "jar"
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0, Copyright 2020 TransferWise Ltd'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'pturovsk'
+                        name = 'Petro Turovskyy'
+                        email = "petro.turovskyy@transferwise.com"
+                        organization = "Transferwise Ltd"
+                        organizationUrl = "https://github.com/transferwise"
+                    }
+                }
+                scm {
+                    connection = projectScmConnection
+                    developerConnection = projectScmConnection
+                    url = projectScmUrl
+                }
+            }
+        }
+    }
+
+    javadoc {
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.addBooleanOption('html5', true)
+        }
+    }
+
+    repositories {
+        maven {
+            url getArtifactoryUrl(project)
+            credentials {
+                username = artifactoryUser
+                password = artifactoryPassword
+            }
+        }
+    }
+
+
+}
+
+task addTag(type: Exec) {
+    commandLine 'git', 'tag', "$project.name-$project.version", '-m', "$project.name-$project.version"
+}
+task pushTag(type: Exec) {
+    commandLine 'git', 'push', 'origin', "$project.name-$project.version"
+}
+
+pushTag.dependsOn addTag
+pushTag.mustRunAfter publish
+
+static getArtifactoryUrl(project) {
+    def releaseType = project.version.endsWith('-SNAPSHOT') ? 'release' : 'snapshot'
+    "https://arti.tw.ee/artifactory/libs-${releaseType}-local"
+}
