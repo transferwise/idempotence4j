@@ -1,10 +1,10 @@
-<a href="https://img.shields.io/badge/release-1.4.0-orange">
-        <img src="https://img.shields.io/badge/release-1.4.0-orange"
+<a href="https://img.shields.io/badge/release-1.4.4-orange">
+        <img src="https://img.shields.io/badge/release-1.4.4-orange"
             alt="Release version"/></a>
 
 # idempotence4j
 
-idempotence4j is a lightweight library that provides support for handling idempotent actions.
+idempotence4j is a lightweight library that provides a support for handling idempotent actions.
 
 All actions are persisted to a database and it's expected that client's only going to use database master node
  to avoid any possible issues caused by the replication lag.
@@ -162,3 +162,9 @@ Each action execution collects and publishes metrics. **idempotence4j-metrics** 
 
 We also provide a common `grafana` dashboard [component](https://github.com/transferwise/grafana-dashboards/blob/master/dashboards/src/components/idempotence4j/actions.libsonnet) that you can include into your provisioned dashboard.
 
+### Roadmap
+
+- Non-transactional execution strategy
+- Payload schema evolution
+- Result payload compression
+- Redis module
