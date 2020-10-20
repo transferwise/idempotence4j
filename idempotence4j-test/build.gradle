@@ -1,3 +1,4 @@
 dependencies {
     implementation project(':idempotence4j-core')
+    implementation libraries.jackson_datatype
 }

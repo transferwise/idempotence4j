@@ -50,7 +50,7 @@ allprojects {
 
         compile libraries.slf4j
 
-        testCompile libraries.groovy
+        testImplementation libraries.groovy
         testImplementation libraries.junit
         testImplementation libraries.spock
 	}
@@ -119,6 +119,10 @@ allprojects {
 
 	check.dependsOn integrationTest
 	afterReleaseBuild.dependsOn publish
+
+    ext.isRunningOnCI = {
+        System.getenv("CI") == "true"
+    }
 
 }
 

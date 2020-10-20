@@ -20,9 +20,7 @@ ext {
     jmhVersion = '1.25.2'
     pgbulkinsertVersion = '7.0.1'
 
-    testContainersVersion = '1.11.3'
     spockVersion = '1.3-groovy-2.5'
-    spockContainersVersion = 'Apricot.RC1'
     junitVersion = '4.12'
 
     libraries = [
@@ -54,11 +52,6 @@ ext {
 
         spock: "org.spockframework:spock-core:${spockVersion}",
         spock_spring: "org.spockframework:spock-spring:${spockVersion}",
-        spock_containers: "com.transferwise:spock-containers-runner:${spockContainersVersion}",
-        test_containers: "org.testcontainers:testcontainers:${testContainersVersion}",
-        postgres_test_container: "org.testcontainers:postgresql:${testContainersVersion}",
-        mariadb_test_container: "org.testcontainers:mariadb:${testContainersVersion}",
         junit: "junit:junit:${junitVersion}"
-
     ]
 }

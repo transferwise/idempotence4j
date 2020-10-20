@@ -44,7 +44,7 @@ springBoot {
 }
 
 dockerCompose {
-    useComposeFiles = ["${projectDir}/gradle/docker-compose/docker-compose.yml"]
+    useComposeFiles = ["${rootDir}/gradle/docker-compose/docker-compose.yml"]
     stopContainers = true
     removeContainers = true
 }
