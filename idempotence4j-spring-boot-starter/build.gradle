@@ -9,11 +9,11 @@ dependencyManagement {
 
 dependencies {
     api project(':idempotence4j-core')
-    compileOnly project(':idempotence4j-postgres')
-    compileOnly project(':idempotence4j-mariadb')
-    compileOnly project(':idempotence4j-metrics')
+    implementation project(':idempotence4j-postgres')
+    implementation project(':idempotence4j-mariadb')
+    implementation project(':idempotence4j-metrics')
 
-    compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
 
     integrationTestImplementation 'org.springframework.boot:spring-boot-starter-test'
     integrationTestImplementation 'org.springframework.boot:spring-boot-starter-web'

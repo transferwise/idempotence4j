@@ -8,13 +8,13 @@ dependencyManagement {
 }
 
 dependencies {
-	compile project(':idempotence4j-core')
-	compile project(':idempotence4j-jdbc')
+    implementation project(':idempotence4j-core')
+    implementation project(':idempotence4j-jdbc')
 
-	compile 'org.springframework:spring-jdbc'
-	compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
+    implementation 'org.springframework:spring-jdbc'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
 
-	testCompile project(':idempotence4j-test')
+    testImplementation project(':idempotence4j-test')
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 	integrationTestImplementation libraries.hikari
