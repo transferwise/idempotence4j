@@ -1,5 +1,6 @@
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.unbroken-dome.test-sets'
+apply plugin: 'docker-compose'
 
 dependencyManagement {
 	imports {
@@ -8,20 +9,28 @@ dependencyManagement {
 }
 
 dependencies {
-	compile project(':idempotence4j-core')
-	compile project(':idempotence4j-jdbc')
+    implementation project(':idempotence4j-core')
+    implementation project(':idempotence4j-jdbc')
 
-	compile 'org.springframework:spring-jdbc'
-	compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+    implementation 'org.springframework:spring-jdbc'
 
-	testCompile project(':idempotence4j-test')
+    testImplementation project(':idempotence4j-test')
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 	integrationTestImplementation libraries.hikari
 	integrationTestImplementation libraries.flyway
 	integrationTestImplementation libraries.mariadb
-	integrationTestImplementation libraries.test_containers
-	integrationTestImplementation libraries.mariadb_test_container
+    integrationTestImplementation libraries.jackson_datatype
 	integrationTestImplementation libraries.spock_spring
-	integrationTestImplementation libraries.spock_containers
+}
+
+dockerCompose {
+    useComposeFiles = ["${rootDir}/gradle/docker-compose/docker-compose.yml"]
+    startedServices = ['mariadb']
+    stopContainers = true
+    removeContainers = true
+}
+if(!isRunningOnCI()) {
+    dockerCompose.isRequiredBy(integrationTest)
 }

@@ -1,6 +1,6 @@
 dependencies {
-	compile project(':idempotence4j-core')
-	compile libraries.spring_jdbc
+    implementation project(':idempotence4j-core')
+    implementation libraries.spring_jdbc
 
-	testCompile project(':idempotence4j-test')
+	testImplementation project(':idempotence4j-test')
 }
