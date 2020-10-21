@@ -71,6 +71,6 @@ pushTag.dependsOn addTag
 pushTag.mustRunAfter publish
 
 static getArtifactoryUrl(project) {
-    def releaseType = project.version.endsWith('-SNAPSHOT') ? 'release' : 'snapshot'
+    def releaseType = project.version.endsWith('-SNAPSHOT') ? 'snapshot' : 'release'
     "https://arti.tw.ee/artifactory/libs-${releaseType}-local"
 }
