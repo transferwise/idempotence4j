@@ -10,6 +10,30 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:10.9
+        env:
+          POSTGRES_DB: idempotence4j_db
+          POSTGRES_USER: username
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      mariadb:
+        image: mariadb:10.3.13
+        env:
+          MYSQL_DATABASE: idempotence4j_db
+          MYSQL_ROOT_PASSWORD: admin
+          MYSQL_USER: username
+          MYSQL_PASSWORD: password
+        ports:
+          - 3306:3306
+
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 1.13
