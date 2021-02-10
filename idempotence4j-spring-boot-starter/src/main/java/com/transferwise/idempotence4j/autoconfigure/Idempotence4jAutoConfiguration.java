@@ -98,13 +98,13 @@ public class Idempotence4jAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        public ActionRepository postgresActionRepository(DataSource dataSource) {
+        public ActionRepository mariaDbActionRepository(DataSource dataSource) {
             return new JdbcMariaDbActionRepository(new JdbcTemplate(dataSource));
         }
 
         @Bean
         @ConditionalOnMissingBean
-        public LockProvider postgresLockProvider(DataSource dataSource) {
+        public LockProvider mariaDbLockProvider(DataSource dataSource) {
             return new JdbcMariaDbLockProvider(new JdbcTemplate(dataSource));
         }
     }
