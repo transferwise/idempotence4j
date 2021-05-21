@@ -9,7 +9,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 @Slf4j
@@ -31,9 +31,8 @@ public class PurgeJob extends RecurringTask<Void> {
     @Override
     public void executeRecurringly(TaskInstance<Void> taskInstance, ExecutionContext executionContext) {
         log.info("Running IdempotentAction purge job");
-        Instant olderThan = LocalDate.now(ClockKeeper.get())
+        Instant olderThan = LocalDateTime.now(ClockKeeper.get())
             .minus(retentionPolicy.getTemporalAmount())
-            .atStartOfDay()
             .toInstant(ZoneOffset.UTC);
 
         actionRepository.deleteOlderThan(olderThan, retentionPolicy.getPurgeJobConfiguration().getBatchSize());
