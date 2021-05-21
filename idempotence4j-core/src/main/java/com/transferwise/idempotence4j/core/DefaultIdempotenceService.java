@@ -51,16 +51,17 @@ public class DefaultIdempotenceService implements IdempotenceService {
      * @param procedure action execution body
      * @param toRecord mapping of procedure result to the model that going to be persisted and provided {@param onRetry}
      */
-    @Override
     public <S, R> R execute(ActionId actionId, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Type recordType) {
         final Metrics metrics = new Metrics(actionId);
 
-        return new MeasuredExecutor()
+        R result = new MeasuredExecutor()
             .onError(ConflictingActionException.class, (duration, ex) -> metrics.record(duration, CONFLICT))
             .onUnexpectedError((duration, ex) -> metrics.record(duration, ERROR))
             .onSuccess((duration) -> metrics.record(duration, SUCCESS))
             .onComplete(() -> metricsPublisher.publish(metrics))
             .submit(() -> execute(actionId, onRetry, procedure, toRecord, recordType, metrics));
+
+        return result;
     }
 
     private <S, R> R execute(ActionId actionId, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Type recordType, Metrics metrics) {

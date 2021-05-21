@@ -4,7 +4,7 @@ import java.time.Clock;
 import java.time.Instant;
 
 public class ClockKeeper {
-    private static final ThreadLocal<Clock> clock =
+    private static ThreadLocal<Clock> clock =
         ThreadLocal.withInitial(Clock::systemUTC);
 
     public static void set(Clock clock) {
