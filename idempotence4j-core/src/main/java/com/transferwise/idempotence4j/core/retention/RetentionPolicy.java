@@ -16,8 +16,7 @@ import java.time.temporal.TemporalAmount;
 
 @Getter
 public class RetentionPolicy {
-    private final Period period;
-    private final Duration duration;
+    private final TemporalAmount temporalAmount;
     private final PurgeJobConfiguration purgeJobConfiguration;
 
     public RetentionPolicy(
@@ -26,13 +25,13 @@ public class RetentionPolicy {
         @NonNull PurgeJobConfiguration purgeJobConfiguration
     ) {
         if (period != null && duration == null) {
-            this.period = Period.parse(period);
-            this.duration = null;
-            Preconditions.checkArgument(!(this.period.isNegative() || this.period.isZero()), "Retention period has to be positive or null");
+            Period p = Period.parse(period);
+            this.temporalAmount = p;
+            Preconditions.checkArgument(!(p.isNegative() || p.isZero()), "Retention period has to be positive or null");
         } else if (period == null && duration != null) {
-            this.period = null;
-            this.duration = Duration.parse(duration);
-            Preconditions.checkArgument(!(this.duration.isNegative() || this.duration.isZero()), "Retention duration has to be positive or null");
+            Duration d = Duration.parse(duration);
+            this.temporalAmount = d;
+            Preconditions.checkArgument(!(d.isNegative() || d.isZero()), "Retention duration has to be positive or null");
         } else {
             throw new IllegalArgumentException("Either period or duration must be specified");
         }
@@ -42,10 +41,6 @@ public class RetentionPolicy {
 
     public Schedule getSchedule() {
         return Schedules.cron(getPurgeJobConfiguration().getSchedule());
-    }
-
-    public TemporalAmount getTemporalAmount() {
-        return this.period != null ? this.period : this.duration;
     }
 
     @Getter
