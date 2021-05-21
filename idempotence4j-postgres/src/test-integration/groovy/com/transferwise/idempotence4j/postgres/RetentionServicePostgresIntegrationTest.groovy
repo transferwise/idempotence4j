@@ -9,17 +9,15 @@ import spock.lang.Subject
 
 import java.time.Clock
 import java.time.Instant
-import java.time.Period
 
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anAction
 import static java.time.ZoneOffset.UTC
 
 class RetentionServicePostgresIntegrationTest extends IntegrationTest {
     def repository = new JdbcPostgresActionRepository(new JdbcTemplate(dataSource))
-    def retentionPolicy = new RetentionPolicy(
-        Period.of(0, 0, 2),
-        new PurgeJobConfiguration("*/5 * * * * ?", 10)
-    )
+
+    def configuration = new PurgeJobConfiguration("*/5 * * * * ?", 10)
+    def retentionPolicy = new RetentionPolicy("P0Y0M2D", null, configuration)
 
     @Subject
     def service = new RetentionService(dataSource, repository, retentionPolicy)
