@@ -133,7 +133,8 @@ public class Idempotence4jAutoConfiguration {
         @ConditionalOnProperty(name="idempotence4j.retention.enabled", havingValue="true", matchIfMissing = false)
         public RetentionService retentionService(DataSource dataSource, ActionRepository actionRepository, RetentionProperties retentionProperties) {
             RetentionPolicy retentionPolicy = new RetentionPolicy(
-                Period.parse(retentionProperties.getPeriod()),
+                retentionProperties.getPeriod(),
+                retentionProperties.getDuration(),
                 new PurgeJobConfiguration(
                     retentionProperties.getPurge().getSchedule(),
                     retentionProperties.getPurge().getBatchSize())

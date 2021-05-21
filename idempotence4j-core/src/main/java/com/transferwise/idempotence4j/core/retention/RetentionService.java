@@ -21,7 +21,7 @@ public class RetentionService {
         this.scheduler = Scheduler
             .create(dataSource)
             .tableName(SCHEDULER_TASK_NAME)
-            .startTasks(new PurgeJob(actionRepository, retentionPolicy.getPurgeJobConfiguration(), retentionPolicy.getPeriod()))
+            .startTasks(new PurgeJob(actionRepository, retentionPolicy))
             .threads(5)
             .build();
     }
