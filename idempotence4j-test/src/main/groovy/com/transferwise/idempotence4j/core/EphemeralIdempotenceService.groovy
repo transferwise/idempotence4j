@@ -13,7 +13,7 @@ class EphemeralIdempotenceService implements IdempotenceService {
     @Synchronized
     def <S, R> R execute(ActionId actionId, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Type recordType) {
         if(storage.containsKey(actionId)) {
-            return onRetry(storage.get(actionId))
+            return onRetry.apply(storage.get(actionId))
         }
 
         R result = procedure.get()
