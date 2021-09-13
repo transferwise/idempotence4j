@@ -44,10 +44,10 @@ jobs:
         settings-path: ${{ github.workspace }}
 
     - name: Build with Gradle
-      run: gradle build
+      run: ./gradlew build
 
     - name: Publish to GitHub Packages
-      run: gradle publish
+      run: ./gradlew publish
       env:
         ARTIFACTORY_USER: ${{ github.actor }}
         ARTIFACTORY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
