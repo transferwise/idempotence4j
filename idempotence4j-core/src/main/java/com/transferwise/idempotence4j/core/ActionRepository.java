@@ -1,6 +1,7 @@
 package com.transferwise.idempotence4j.core;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface ActionRepository {
@@ -8,4 +9,5 @@ public interface ActionRepository {
     Action insertOrGet(Action action);
     Action update(Action action);
     void deleteOlderThan(Instant timestamp, Integer batchSize);
+    void deleteByIds(List<ActionId> actionIds);
 }
