@@ -69,12 +69,5 @@ pushTag.dependsOn addTag
 pushTag.mustRunAfter publish
 
 static getArtifactoryUrl(project) {
-    if (System.getenv("CIRCLECI")) {
-        //Publishing to TransferWise artifactory
-        def releaseType = project.version.endsWith('-SNAPSHOT') ? 'snapshot' : 'release'
-        "https://arti.tw.ee/artifactory/libs-${releaseType}-local"
-    } else {
-        //Publishing to GitHubPackages
-        return "https://maven.pkg.github.com/transferwise/idempotence4j"
-    }
+    return System.getenv("ARTIFACTORY_URL")
 }

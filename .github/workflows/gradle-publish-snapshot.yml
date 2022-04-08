@@ -1,9 +1,7 @@
-name: Build, Test & Upload Library
+name: Build, Test & Upload Library Snapshot
 
 on: 
-  push:
-    branches:
-      - master
+  pull_request:
 
 env:
   ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
@@ -50,16 +48,9 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
-    - name: Publish to Wise Artifactory
+    - name: Publish Snapshot to Wise Artifactory
       run: ./gradlew publish
       env:
-        ARTIFACTORY_URL: https://arti.tw.ee/artifactory/libs-release-local
+        ARTIFACTORY_URL: https://arti.tw.ee/artifactory/libs-snapshot-local
         ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
         ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
-    - name: Publish to GitHub Packages
-      run: ./gradlew publish
-      env:
-        ARTIFACTORY_URL: https://maven.pkg.github.com/transferwise/idempotence4j
-        ARTIFACTORY_USER: ${{ github.actor }}
-        ARTIFACTORY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
