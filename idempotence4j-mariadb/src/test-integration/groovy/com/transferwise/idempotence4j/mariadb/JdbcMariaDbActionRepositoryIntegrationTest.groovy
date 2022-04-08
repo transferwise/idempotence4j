@@ -1,6 +1,7 @@
 package com.transferwise.idempotence4j.mariadb
 
 import com.transferwise.idempotence4j.core.Action
+import com.transferwise.idempotence4j.core.ActionId
 import com.transferwise.idempotence4j.core.ClockKeeper
 import org.springframework.jdbc.core.JdbcTemplate
 import spock.lang.Subject
@@ -88,6 +89,29 @@ class JdbcMariaDbActionRepositoryIntegrationTest extends IntegrationTest {
         and:
             purged.each { Action it ->
                 assert repository.find(it.actionId).isEmpty()
+            }
+    }
+
+    def "should remove actions by id"() {
+        given:
+            def actions = []
+            10.times {
+                actions << anAction()
+            }
+        and:
+            List<ActionId> actionIds = actions.each { it -> repository.insertOrGet(it) } .collect({ it.actionId })
+            def firstHalfActionIds = actionIds.dropRight(actions.size() / 2 as int)
+            def lastHalfActionIds = actionIds.drop(actions.size() / 2 as int)
+        when:
+            repository.deleteByIds(firstHalfActionIds)
+        then:
+            firstHalfActionIds.each { ActionId it -> assert repository.find(it).isEmpty() }
+            lastHalfActionIds.each { ActionId it -> assert !repository.find(it).isEmpty() }
+        when:
+            repository.deleteByIds(lastHalfActionIds)
+        then:
+            actionIds.each { ActionId it ->
+                assert repository.find(it).isEmpty()
             }
     }
 

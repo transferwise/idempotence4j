@@ -57,7 +57,12 @@ public class JdbcPostgresActionRepository implements ActionRepository {
 
         List<ActionId> actionIdList = namedParameterJdbcTemplate.query(FIND_OLDER_THAN_SQL, queryParameters, (rs, rowNum) -> sqlMapper.toId(rs));
 
-        MapSqlParameterSource[] deleteBatchParameters = actionIdList.stream().map(actionId -> new MapSqlParameterSource()
+        deleteByIds(actionIdList);
+    }
+
+    @Override
+    public void deleteByIds(List<ActionId> actionIds) {
+        MapSqlParameterSource[] deleteBatchParameters = actionIds.stream().map(actionId -> new MapSqlParameterSource()
             .addValue("key", actionId.getKey())
             .addValue("type", actionId.getType())
             .addValue("client", actionId.getClient()))

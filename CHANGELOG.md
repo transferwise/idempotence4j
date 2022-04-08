@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 1.6.0 - 2022-04-08
+
+expose ActionRepository deleteByIds method
+
 ## 1.4.0 - 2020-09-25
 
 MariaDb integration
