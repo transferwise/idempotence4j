@@ -53,6 +53,6 @@ jobs:
       if: github.ref == 'refs/heads/master'
       run: ./gradlew publish
       env:
-        ARTIFACTORY_URL: https://maven.pkg.github.com/transferwise/idempotence4j
-        ARTIFACTORY_USER: ${{ github.actor }}
-        ARTIFACTORY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        MAVEN_URL: https://maven.pkg.github.com/transferwise/idempotence4j
+        MAVEN_USER: ${{ github.actor }}
+        MAVEN_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
