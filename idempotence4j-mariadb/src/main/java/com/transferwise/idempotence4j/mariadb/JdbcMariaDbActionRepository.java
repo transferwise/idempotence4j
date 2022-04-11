@@ -55,6 +55,11 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
 
         List<ActionId> actionIdList = namedParameterJdbcTemplate.query(FIND_OLDER_THAN_SQL, queryParameters, (rs, rowNum) -> sqlMapper.toId(rs));
 
+        deleteByIds(actionIdList);
+    }
+
+    @Override
+    public void deleteByIds(List<ActionId> actionIdList) {
         MapSqlParameterSource[] deleteBatchParameters = actionIdList.stream().map(actionId -> new MapSqlParameterSource()
             .addValue("key", actionId.getKey())
             .addValue("type", actionId.getType())
