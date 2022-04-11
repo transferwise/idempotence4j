@@ -1,4 +1,5 @@
 apply plugin: "maven-publish"
+apply plugin: "signing"
 
 ext.projectName = "idempotence4j"
 ext.projectDescription = "Lightweight library for handling idempotent actions"
@@ -47,27 +48,24 @@ publishing {
         }
     }
 
-    repositories {
-        maven {
-            url getArtifactoryUrl(project)
-            credentials {
-                username = artifactoryUser
-                password = artifactoryPassword
-            }
-        }
-    }
-}
+    signing {
+		def signingKey = System.env.OSS_SIGNING_KEY as String
+		def signingPassword = System.env.OSS_SIGNING_PASSWORD as String
 
-task addTag(type: Exec) {
-    commandLine 'git', 'tag', "$project.name-$project.version", '-m', "$project.name-$project.version"
-}
-task pushTag(type: Exec) {
-    commandLine 'git', 'push', 'origin', "$project.name-$project.version"
-}
+		if (signingKey && signingPassword) {
+			useInMemoryPgpKeys(signingKey, signingPassword)
+            sign publishing.publications.mavenJava
+		}
+	}
 
-pushTag.dependsOn addTag
-pushTag.mustRunAfter publish
-
-static getArtifactoryUrl(project) {
-    return System.getenv("ARTIFACTORY_URL")
+	repositories {
+		maven {
+			url System.env.MAVEN_URL as String
+			credentials {
+				username = System.env.MAVEN_USER as String
+				password = System.env.MAVEN_PASSWORD as String
+			}
+		}
+        mavenLocal()
+	}
 }

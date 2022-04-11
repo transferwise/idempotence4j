@@ -1,13 +1,10 @@
 name: Build, Test & Upload Library
 
-on: 
+on:
+  pull_request:
   push:
     branches:
       - master
-
-env:
-  ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
-  ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
 jobs:
   build:
@@ -39,7 +36,9 @@ jobs:
           - 3306:3306
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
     - name: Set up JDK 1.13
       uses: actions/setup-java@v1
       with:
@@ -50,14 +49,8 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
-    - name: Publish to Wise Artifactory
-      run: ./gradlew publish
-      env:
-        ARTIFACTORY_URL: https://arti.tw.ee/artifactory/libs-release-local
-        ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
-        ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
     - name: Publish to GitHub Packages
+      if: github.ref == 'refs/heads/master'
       run: ./gradlew publish
       env:
         ARTIFACTORY_URL: https://maven.pkg.github.com/transferwise/idempotence4j
