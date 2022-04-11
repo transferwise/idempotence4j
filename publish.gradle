@@ -3,8 +3,6 @@ apply plugin: "signing"
 
 ext.projectName = "idempotence4j"
 ext.projectDescription = "Lightweight library for handling idempotent actions"
-ext.artifactoryUser = project.hasProperty("artifactoryUser") ? project.artifactoryUser : System.getenv('ARTIFACTORY_USER') as String
-ext.artifactoryPassword = project.hasProperty("artifactoryPassword") ? project.artifactoryPassword : System.getenv('ARTIFACTORY_PASSWORD') as String
 ext.projectScmUrl = "https://github.com/transferwise/${projectName}"
 ext.projectScmConnection = "scm:git:git://github.com/transferwise/${projectName}.git"
 
