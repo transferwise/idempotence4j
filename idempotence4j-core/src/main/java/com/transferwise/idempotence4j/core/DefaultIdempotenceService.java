@@ -49,7 +49,7 @@ public class DefaultIdempotenceService implements IdempotenceService {
      * @param actionId identifier of the action
      * @param onRetry procedure executed when clients try to re-try previously completed request with committed result
      * @param procedure action execution body
-     * @param toRecord mapping of procedure result to the model that going to be persisted and provided {@param onRetry}
+     * @param toRecord mapping of procedure result to the model that going to be persisted and provided {@code onRetry}
      */
     public <S, R> R execute(ActionId actionId, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Type recordType) {
         final Metrics metrics = new Metrics(actionId);
