@@ -18,7 +18,7 @@ buildscript {
 }
 
 allprojects {
-	version = getVersion(project)
+	version = project.version
 
 	apply plugin: 'java'
 	apply plugin: 'java-library'
@@ -87,12 +87,4 @@ allprojects {
 	ext.isRunningOnCI = {
 		System.getenv("CI") == "true"
 	}
-}
-
-static getVersion(project) {
-    branchName() == 'master' ? project.version : project.version + '-SNAPSHOT'
-}
-
-static branchName() {
-    'git rev-parse --abbrev-ref HEAD'.execute().text.trim()
 }
