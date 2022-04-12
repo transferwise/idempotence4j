@@ -72,7 +72,6 @@ allprojects {
 		}
 	}
 
-
 	integrationTest {
 		reports.junitXml.destination = file('build/test-integration-results')
 
