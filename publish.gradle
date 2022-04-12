@@ -6,6 +6,11 @@ ext.projectDescription = "Lightweight library for handling idempotent actions"
 ext.projectScmUrl = "https://github.com/transferwise/${projectName}"
 ext.projectScmConnection = "scm:git:git://github.com/transferwise/${projectName}.git"
 
+java {
+	withSourcesJar()
+	withJavadocJar()
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -37,12 +42,6 @@ publishing {
                     url = projectScmUrl
                 }
             }
-        }
-    }
-
-    javadoc {
-        if (JavaVersion.current().isJava9Compatible()) {
-            options.addBooleanOption('html5', true)
         }
     }
 

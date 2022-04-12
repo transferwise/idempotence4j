@@ -1,5 +1,5 @@
 wrapper {
-	gradleVersion = '6.4.1'
+	gradleVersion = '7.3.3'
 }
 
 buildscript {
@@ -10,8 +10,8 @@ buildscript {
 		mavenLocal()
 	}
 	dependencies {
-		classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:2.1.1'
-		classpath "com.avast.gradle:gradle-docker-compose-plugin:0.12.1"
+		classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:4.0.0'
+		classpath "com.avast.gradle:gradle-docker-compose-plugin:0.15.0"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.10.RELEASE"
         classpath "org.springframework.boot:spring-boot-gradle-plugin:2.2.4.RELEASE"
 	}
@@ -53,15 +53,6 @@ allprojects {
         testImplementation libraries.spock
 	}
 
-	task sourcesJar(type: Jar, dependsOn: classes, group: 'build') {
-		archiveClassifier = 'sources'
-		from sourceSets.main.allSource
-	}
-
-	artifacts {
-		archives sourcesJar
-	}
-
 	test {
 		reports.junitXml.destination = file('build/test-results')
 
@@ -71,7 +62,6 @@ allprojects {
 			exceptionFormat = 'full'
 		}
 	}
-
 
 	integrationTest {
 		reports.junitXml.destination = file('build/test-integration-results')
@@ -86,5 +76,17 @@ allprojects {
 
 	ext.isRunningOnCI = {
 		System.getenv("CI") == "true"
+	}
+}
+
+configurations {
+	provided
+	tests
+	runtime {
+		exclude module: 'lombok'
+	}
+
+	compile {
+		exclude module: 'groovy-all'
 	}
 }
