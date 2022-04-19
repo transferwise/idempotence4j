@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 1.7.0 - 2022-04-19
+- `deleteOlderThan` method on `ActionRepository` now forces use of a primitive for batch size.
+- Begin returning the number of rows deleted from deletion methods in `ActionRepository`
+- Exposed a `deleteByTypeAndClient` method on `ActionRepository`
+- Deletion of old action IDs is now more performant on MariaDB
+
 ## 1.6.0 - 2022-04-08
 
 expose ActionRepository deleteByIds method

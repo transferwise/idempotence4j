@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,25 +51,39 @@ public class JdbcPostgresActionRepository implements ActionRepository {
 	}
 
     @Override
-    public void deleteOlderThan(Instant timestamp, Integer batchSize) {
+    public int deleteOlderThan(Instant timestamp, int batchSize) {
         MapSqlParameterSource queryParameters = new MapSqlParameterSource()
             .addValue("createdAt", Timestamp.from(timestamp))
             .addValue("limit", batchSize);
 
         List<ActionId> actionIdList = namedParameterJdbcTemplate.query(FIND_OLDER_THAN_SQL, queryParameters, (rs, rowNum) -> sqlMapper.toId(rs));
 
-        deleteByIds(actionIdList);
+        int[] rowsDeleted = deleteByIds(actionIdList);
+        return Arrays.stream(rowsDeleted).sum();
     }
 
     @Override
-    public void deleteByIds(List<ActionId> actionIds) {
+    public int deleteByTypeAndClient(String type, String client, int batchSize) {
+        MapSqlParameterSource queryParameters = new MapSqlParameterSource()
+            .addValue("type", type)
+            .addValue("client", client)
+            .addValue("limit", batchSize);
+
+        List<ActionId> actionIdList = namedParameterJdbcTemplate.query(FIND_BY_TYPE_AND_CLIENT_SQL, queryParameters, (rs, rowNum) -> sqlMapper.toId(rs));
+
+        int[] rowsDeleted = deleteByIds(actionIdList);
+        return Arrays.stream(rowsDeleted).sum();
+    }
+
+    @Override
+    public int[] deleteByIds(List<ActionId> actionIds) {
         MapSqlParameterSource[] deleteBatchParameters = actionIds.stream().map(actionId -> new MapSqlParameterSource()
             .addValue("key", actionId.getKey())
             .addValue("type", actionId.getType())
             .addValue("client", actionId.getClient()))
             .toArray(size -> new MapSqlParameterSource[size]);
 
-        namedParameterJdbcTemplate.batchUpdate(DELETE_SQL, deleteBatchParameters);
+        return namedParameterJdbcTemplate.batchUpdate(DELETE_BY_ACTION_ID_SQL, deleteBatchParameters);
     }
 
     //@formatter:off
@@ -126,7 +141,17 @@ public class JdbcPostgresActionRepository implements ActionRepository {
             "created_at < :createdAt " +
             "LIMIT :limit";
 
-    private final static String DELETE_SQL =
+    private final static String FIND_BY_TYPE_AND_CLIENT_SQL =
+        "SELECT " +
+            "key, type, client " +
+            "FROM idempotent_action " +
+            "WHERE " +
+            "type = :type " +
+            "AND client = :client " +
+            "ORDER BY created_at ASC " +
+            "LIMIT :limit";
+
+    private final static String DELETE_BY_ACTION_ID_SQL =
         "DELETE " +
             "FROM idempotent_action " +
             "WHERE " +
