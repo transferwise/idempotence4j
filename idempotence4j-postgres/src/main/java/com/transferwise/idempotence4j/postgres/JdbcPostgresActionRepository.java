@@ -50,7 +50,7 @@ public class JdbcPostgresActionRepository implements ActionRepository {
 	}
 
     @Override
-    public void deleteOlderThan(Instant timestamp, Integer batchSize) {
+    public void deleteOlderThan(Instant timestamp, int batchSize) {
         MapSqlParameterSource queryParameters = new MapSqlParameterSource()
             .addValue("createdAt", Timestamp.from(timestamp))
             .addValue("limit", batchSize);
