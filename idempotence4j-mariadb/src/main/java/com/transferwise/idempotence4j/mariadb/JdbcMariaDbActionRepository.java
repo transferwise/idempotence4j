@@ -68,7 +68,7 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
             .addValue("client", actionId.getClient()))
             .toArray(size -> new MapSqlParameterSource[size]);
 
-        return namedParameterJdbcTemplate.batchUpdate(DELETE_SQL, deleteBatchParameters);
+        return namedParameterJdbcTemplate.batchUpdate(DELETE_BY_ACTION_ID_SQL, deleteBatchParameters);
     }
 
     //@formatter:off
@@ -129,7 +129,7 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
             "created_at < :createdAt " +
             "LIMIT :limit";
 
-    private final static String DELETE_SQL =
+    private final static String DELETE_BY_ACTION_ID_SQL =
         "DELETE " +
             "FROM idempotent_action " +
             "WHERE " +
