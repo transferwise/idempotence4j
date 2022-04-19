@@ -79,12 +79,14 @@ class JdbcMariaDbActionRepositoryIntegrationTest extends IntegrationTest {
         and:
             actions.each { it -> repository.insertOrGet(it) }
         when:
-            repository.deleteOlderThan(Instant.parse("2019-12-11T00:00:00Z"), 5)
+            int firstDeletionCount = repository.deleteOlderThan(Instant.parse("2019-12-11T00:00:00Z"), 5)
         then:
+            firstDeletionCount == 5
             countActions() == 15
         when:
-            repository.deleteOlderThan(Instant.parse("2019-12-11T00:00:00Z"), 5)
+            int secondDeletionCount = repository.deleteOlderThan(Instant.parse("2019-12-11T00:00:00Z"), 5)
         then:
+            secondDeletionCount == 5
             countActions() == 10
         and:
             purged.each { Action it ->
@@ -103,12 +105,14 @@ class JdbcMariaDbActionRepositoryIntegrationTest extends IntegrationTest {
             def firstHalfActionIds = actionIds.dropRight(actions.size() / 2 as int)
             def lastHalfActionIds = actionIds.drop(actions.size() / 2 as int)
         when:
-            repository.deleteByIds(firstHalfActionIds)
+            int[] firstRowsDeleted = repository.deleteByIds(firstHalfActionIds)
+            firstRowsDeleted == [1, 1, 1, 1, 1] as int[]
         then:
             firstHalfActionIds.each { ActionId it -> assert repository.find(it).isEmpty() }
             lastHalfActionIds.each { ActionId it -> assert !repository.find(it).isEmpty() }
         when:
-            repository.deleteByIds(lastHalfActionIds)
+            int[] secondRowsDeleted = repository.deleteByIds(lastHalfActionIds)
+            secondRowsDeleted == [1, 1, 1, 1, 1] as int[]
         then:
             actionIds.each { ActionId it ->
                 assert repository.find(it).isEmpty()

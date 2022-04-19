@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,25 +49,26 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
 	}
 
     @Override
-    public void deleteOlderThan(Instant timestamp, int batchSize) {
+    public int deleteOlderThan(Instant timestamp, int batchSize) {
         MapSqlParameterSource queryParameters = new MapSqlParameterSource()
             .addValue("createdAt", Timestamp.from(timestamp))
             .addValue("limit", batchSize);
 
         List<ActionId> actionIdList = namedParameterJdbcTemplate.query(FIND_OLDER_THAN_SQL, queryParameters, (rs, rowNum) -> sqlMapper.toId(rs));
 
-        deleteByIds(actionIdList);
+        int[] rowsDeleted = deleteByIds(actionIdList);
+        return Arrays.stream(rowsDeleted).sum();
     }
 
     @Override
-    public void deleteByIds(List<ActionId> actionIdList) {
+    public int[] deleteByIds(List<ActionId> actionIdList) {
         MapSqlParameterSource[] deleteBatchParameters = actionIdList.stream().map(actionId -> new MapSqlParameterSource()
             .addValue("key", actionId.getKey())
             .addValue("type", actionId.getType())
             .addValue("client", actionId.getClient()))
             .toArray(size -> new MapSqlParameterSource[size]);
 
-        namedParameterJdbcTemplate.batchUpdate(DELETE_SQL, deleteBatchParameters);
+        return namedParameterJdbcTemplate.batchUpdate(DELETE_SQL, deleteBatchParameters);
     }
 
     //@formatter:off
