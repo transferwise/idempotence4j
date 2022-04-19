@@ -16,6 +16,12 @@ public interface ActionRepository {
     int deleteOlderThan(Instant timestamp, int batchSize);
 
     /**
+     * Batch deletes actions from the repository by type and client, limited by the batch size.
+     * @return the number of actions deleted
+     */
+    int deleteByTypeAndClient(String type, String client, int batchSize);
+
+    /**
      * Batch deletes actions from the repository by their IDs.
      * @return An array containing the number of actions deleted, per action ID passed in as an argument.
      */

@@ -63,6 +63,19 @@ public class JdbcPostgresActionRepository implements ActionRepository {
     }
 
     @Override
+    public int deleteByTypeAndClient(String type, String client, int batchSize) {
+        MapSqlParameterSource queryParameters = new MapSqlParameterSource()
+            .addValue("type", type)
+            .addValue("client", client)
+            .addValue("limit", batchSize);
+
+        List<ActionId> actionIdList = namedParameterJdbcTemplate.query(FIND_BY_TYPE_AND_CLIENT_SQL, queryParameters, (rs, rowNum) -> sqlMapper.toId(rs));
+
+        int[] rowsDeleted = deleteByIds(actionIdList);
+        return Arrays.stream(rowsDeleted).sum();
+    }
+
+    @Override
     public int[] deleteByIds(List<ActionId> actionIds) {
         MapSqlParameterSource[] deleteBatchParameters = actionIds.stream().map(actionId -> new MapSqlParameterSource()
             .addValue("key", actionId.getKey())
@@ -126,6 +139,16 @@ public class JdbcPostgresActionRepository implements ActionRepository {
             "FROM idempotent_action " +
             "WHERE " +
             "created_at < :createdAt " +
+            "LIMIT :limit";
+
+    private final static String FIND_BY_TYPE_AND_CLIENT_SQL =
+        "SELECT " +
+            "key, type, client " +
+            "FROM idempotent_action " +
+            "WHERE " +
+            "type = :type " +
+            "AND client = :client " +
+            "ORDER BY created_at ASC " +
             "LIMIT :limit";
 
     private final static String DELETE_BY_ACTION_ID_SQL =

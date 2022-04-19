@@ -9,6 +9,8 @@ import spock.lang.Subject
 import java.time.Clock
 import java.time.Instant
 
+import static com.transferwise.idempotence4j.factory.ActionTestFactory.CLIENT
+import static com.transferwise.idempotence4j.factory.ActionTestFactory.TYPE
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anAction
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anActionId
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anActionResult
@@ -91,6 +93,31 @@ class JdbcMariaDbActionRepositoryIntegrationTest extends IntegrationTest {
         and:
             purged.each { Action it ->
                 assert repository.find(it.actionId).isEmpty()
+            }
+    }
+
+    def "should remove actions by type and client"() {
+        given:
+            def actions = []
+            10.times {
+                actions << anAction()
+            }
+        and:
+            List<ActionId> actionIds = actions.each { it -> repository.insertOrGet(it) } .collect({ it.actionId })
+            def firstHalfActionIds = actionIds.dropRight(actions.size() / 2 as int)
+            def lastHalfActionIds = actionIds.drop(actions.size() / 2 as int)
+        when:
+            int firstDeletionCount = repository.deleteByTypeAndClient(TYPE, CLIENT, 5)
+        then:
+            firstDeletionCount == 5
+            firstHalfActionIds.each { ActionId it -> assert repository.find(it).isEmpty() }
+            lastHalfActionIds.each { ActionId it -> assert !repository.find(it).isEmpty() }
+        when:
+            int secondDeletionCount = repository.deleteByTypeAndClient(TYPE, CLIENT, 5)
+        then:
+            secondDeletionCount == 5
+            actionIds.each { ActionId it ->
+                assert repository.find(it).isEmpty()
             }
     }
 

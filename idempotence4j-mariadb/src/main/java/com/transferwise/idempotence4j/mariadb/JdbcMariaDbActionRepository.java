@@ -57,6 +57,16 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
     }
 
     @Override
+    public int deleteByTypeAndClient(String type, String client, int batchSize) {
+        MapSqlParameterSource deleteParameters = new MapSqlParameterSource()
+            .addValue("type", type)
+            .addValue("client", client)
+            .addValue("limit", batchSize);
+
+        return namedParameterJdbcTemplate.update(DELETE_BY_TYPE_AND_CLIENT_SQL, deleteParameters);
+    }
+
+    @Override
     public int[] deleteByIds(List<ActionId> actionIdList) {
         MapSqlParameterSource[] deleteBatchParameters = actionIdList.stream().map(actionId -> new MapSqlParameterSource()
             .addValue("key", actionId.getKey())
@@ -121,6 +131,13 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
         "DELETE FROM idempotent_action " +
             "WHERE " +
             "created_at < :createdAt " +
+            "LIMIT :limit";
+
+    private final static String DELETE_BY_TYPE_AND_CLIENT_SQL =
+        "DELETE FROM idempotent_action " +
+            "WHERE type = :type " +
+            "  AND client = :client " +
+            "ORDER BY created_at ASC " +
             "LIMIT :limit";
 
     private final static String DELETE_BY_ACTION_ID_SQL =

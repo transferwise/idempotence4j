@@ -12,11 +12,15 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 
 class ActionTestFactory {
+
+    static final String TYPE = "ADD"
+    static final String CLIENT = "aService"
+
     static anActionId(
         Map args = [:],
         String key = UUID.randomUUID().toString(),
-        String type = "ADD",
-        String client = "aService"
+        String type = TYPE,
+        String client = CLIENT
     ) {
         new ActionId(
             args.key as String ?: key,
