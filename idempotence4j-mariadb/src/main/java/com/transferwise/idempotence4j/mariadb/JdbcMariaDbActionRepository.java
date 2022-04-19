@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,14 +49,11 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
 
     @Override
     public int deleteOlderThan(Instant timestamp, int batchSize) {
-        MapSqlParameterSource queryParameters = new MapSqlParameterSource()
+        MapSqlParameterSource deleteParameters = new MapSqlParameterSource()
             .addValue("createdAt", Timestamp.from(timestamp))
             .addValue("limit", batchSize);
 
-        List<ActionId> actionIdList = namedParameterJdbcTemplate.query(FIND_OLDER_THAN_SQL, queryParameters, (rs, rowNum) -> sqlMapper.toId(rs));
-
-        int[] rowsDeleted = deleteByIds(actionIdList);
-        return Arrays.stream(rowsDeleted).sum();
+        return namedParameterJdbcTemplate.update(DELETE_OLDER_THAN_SQL, deleteParameters);
     }
 
     @Override
@@ -121,10 +117,8 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
 				"result = :result, " +
 				"result_type = :resultType";
 
-    private final static String FIND_OLDER_THAN_SQL =
-        "SELECT " +
-            "`key`, type, client " +
-            "FROM idempotent_action " +
+    private final static String DELETE_OLDER_THAN_SQL =
+        "DELETE FROM idempotent_action " +
             "WHERE " +
             "created_at < :createdAt " +
             "LIMIT :limit";
