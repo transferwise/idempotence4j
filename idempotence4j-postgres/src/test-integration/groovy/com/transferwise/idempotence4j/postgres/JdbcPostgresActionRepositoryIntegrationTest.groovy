@@ -106,14 +106,11 @@ class JdbcPostgresActionRepositoryIntegrationTest extends IntegrationTest {
             }
         and:
             List<ActionId> actionIds = actions.each { it -> repository.insertOrGet(it) } .collect({ it.actionId })
-            def firstHalfActionIds = actionIds.dropRight(actions.size() / 2 as int)
-            def lastHalfActionIds = actionIds.drop(actions.size() / 2 as int)
         when:
             int firstDeletionCount = repository.deleteByTypeAndClient(TYPE, CLIENT, 5)
         then:
             firstDeletionCount == 5
-            firstHalfActionIds.each { ActionId it -> assert repository.find(it).isEmpty() }
-            lastHalfActionIds.each { ActionId it -> assert !repository.find(it).isEmpty() }
+            actionIds.findAll { repository.find(it).isEmpty() }.size() == 5
         when:
             int secondDeletionCount = repository.deleteByTypeAndClient(TYPE, CLIENT, 5)
         then:
