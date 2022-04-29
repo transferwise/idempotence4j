@@ -148,7 +148,6 @@ public class JdbcPostgresActionRepository implements ActionRepository {
             "WHERE " +
             "type = :type " +
             "AND client = :client " +
-            "ORDER BY created_at ASC " +
             "LIMIT :limit";
 
     private final static String DELETE_BY_ACTION_ID_SQL =

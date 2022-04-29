@@ -137,7 +137,6 @@ public class JdbcMariaDbActionRepository implements ActionRepository {
         "DELETE FROM idempotent_action " +
             "WHERE type = :type " +
             "  AND client = :client " +
-            "ORDER BY created_at ASC " +
             "LIMIT :limit";
 
     private final static String DELETE_BY_ACTION_ID_SQL =
