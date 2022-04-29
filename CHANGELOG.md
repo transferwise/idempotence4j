@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 1.8.0 - 2022-04-29
+- Add index definition for `deleteByTypeAndClient`
+- `deleteByTypeAndClient` is now more performant without sorting in the query
+
 ## 1.7.0 - 2022-04-19
 - `deleteOlderThan` method on `ActionRepository` now forces use of a primitive for batch size.
 - Begin returning the number of rows deleted from deletion methods in `ActionRepository`
