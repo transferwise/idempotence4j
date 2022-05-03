@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ## 1.7.1 - 2022-05-03
 bump cron-utils to fix avd.aquasec.com/nvd/cve-2021-41269
+bump jackson-datatype to fix https://cve.mitre.org/cgi-bin/cvename.cgi?name=cve-2018-1000873
 
 ## 1.7.0 - 2022-04-19
 - `deleteOlderThan` method on `ActionRepository` now forces use of a primitive for batch size.
