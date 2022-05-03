@@ -14,7 +14,7 @@ ext {
     postgresqlVersion = '42.2.16'
     mariaDbVersion = '2.5.2'
     dbSchedulerVersion = '7.2'
-    cronUtilsVersion = '8.0.0'
+    cronUtilsVersion = '9.1.6'
     uuidCreatorVersion = '2.7.10'
 
     jmhVersion = '1.25.2'
