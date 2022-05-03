@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 1.7.1 - 2022-05-03
+bump cron-utils to fix avd.aquasec.com/nvd/cve-2021-41269
+
 ## 1.7.0 - 2022-04-19
 - `deleteOlderThan` method on `ActionRepository` now forces use of a primitive for batch size.
 - Begin returning the number of rows deleted from deletion methods in `ActionRepository`
