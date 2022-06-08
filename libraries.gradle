@@ -13,7 +13,7 @@ ext {
     flywayVersion = '6.1.4'
     postgresqlVersion = '42.2.16'
     mariaDbVersion = '2.5.2'
-    dbSchedulerVersion = '7.2'
+    dbSchedulerVersion = '11.0'
     cronUtilsVersion = '9.1.6'
     uuidCreatorVersion = '2.7.10'
 
