@@ -13,7 +13,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:10.9
+        image: postgres:12
         env:
           POSTGRES_DB: idempotence4j_db
           POSTGRES_USER: username

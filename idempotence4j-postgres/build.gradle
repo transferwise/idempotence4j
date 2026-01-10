@@ -20,6 +20,7 @@ dependencies {
 
 	integrationTestImplementation libraries.hikari
 	integrationTestImplementation libraries.flyway
+	integrationTestImplementation libraries.flyway_postgres
 	integrationTestImplementation libraries.postgresql
     integrationTestImplementation libraries.jackson_datatype
 	integrationTestImplementation libraries.spock_spring
