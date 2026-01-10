@@ -40,6 +40,7 @@ ext {
 
         hikari: "com.zaxxer:HikariCP:${hikariVersion}",
         flyway: "org.flywaydb:flyway-core:${flywayVersion}",
+        flyway_mysql: "org.flywaydb:flyway-mysql:${flywayVersion}",
         postgresql: "org.postgresql:postgresql:${postgresqlVersion}",
         mariadb: "org.mariadb.jdbc:mariadb-java-client:${mariaDbVersion}",
 

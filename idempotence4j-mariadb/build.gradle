@@ -20,6 +20,7 @@ dependencies {
 
 	integrationTestImplementation libraries.hikari
 	integrationTestImplementation libraries.flyway
+	integrationTestImplementation libraries.flyway_mysql
     integrationTestImplementation libraries.mariadb
     integrationTestImplementation libraries.jackson_datatype
     integrationTestImplementation libraries.spock_spring
