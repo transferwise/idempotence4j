@@ -60,5 +60,5 @@ jar {
 }
 
 bootJar {
-    classifier = 'application'
+    archiveClassifier = 'application'
 }

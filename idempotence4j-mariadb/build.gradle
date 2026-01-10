@@ -20,9 +20,10 @@ dependencies {
 
 	integrationTestImplementation libraries.hikari
 	integrationTestImplementation libraries.flyway
-	integrationTestImplementation libraries.mariadb
+    integrationTestImplementation libraries.mariadb
     integrationTestImplementation libraries.jackson_datatype
-	integrationTestImplementation libraries.spock_spring
+    integrationTestImplementation libraries.spock_spring
+    integrationTestImplementation libraries.groovy_sql
 }
 
 dockerCompose {

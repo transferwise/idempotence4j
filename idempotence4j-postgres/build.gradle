@@ -23,6 +23,7 @@ dependencies {
 	integrationTestImplementation libraries.postgresql
     integrationTestImplementation libraries.jackson_datatype
 	integrationTestImplementation libraries.spock_spring
+    integrationTestImplementation libraries.groovy_sql
 }
 
 dockerCompose {

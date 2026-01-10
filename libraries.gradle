@@ -1,13 +1,13 @@
 ext {
-    lombokVersion = '1.18.10'
+    lombokVersion = '1.18.32'
     slf4jVersion = '1.7.26'
     jacksonVersion = '2.13.2'
     micrometerVersion = '1.3.5'
 
-    springVersion = '2.2.4.RELEASE'
-    springJdbcVersion = '4.3.18.RELEASE'
+    springVersion = '3.5.7'
+    springJdbcVersion = '6.2.12'
 
-    groovyVersion = '2.5.13'
+    groovyVersion = '4.0.29'
 
     hikariVersion = '3.3.1'
     flywayVersion = '6.1.4'
@@ -20,8 +20,9 @@ ext {
     jmhVersion = '1.25.2'
     pgbulkinsertVersion = '7.0.1'
 
-    spockVersion = '1.3-groovy-2.5'
+    spockVersion = '2.4-M5-groovy-4.0'
     junitVersion = '4.12'
+    junitPlatformVersion = '1.12.2'
 
     libraries = [
         lombok: "org.projectlombok:lombok:${lombokVersion}",
@@ -33,7 +34,9 @@ ext {
         spring_boot: "org.springframework.boot:spring-boot-dependencies:${springVersion}",
         spring_jdbc: "org.springframework:spring-jdbc:${springJdbcVersion}",
 
-        groovy: "org.codehaus.groovy:groovy-all:${groovyVersion}",
+        groovy: "org.apache.groovy:groovy:${groovyVersion}",
+        groovy_json: "org.apache.groovy:groovy-json:${groovyVersion}",
+        groovy_sql: "org.apache.groovy:groovy-sql:${groovyVersion}",
 
         hikari: "com.zaxxer:HikariCP:${hikariVersion}",
         flyway: "org.flywaydb:flyway-core:${flywayVersion}",
@@ -52,6 +55,7 @@ ext {
 
         spock: "org.spockframework:spock-core:${spockVersion}",
         spock_spring: "org.spockframework:spock-spring:${spockVersion}",
-        junit: "junit:junit:${junitVersion}"
+        junit: "junit:junit:${junitVersion}",
+        junit_platform_launcher: "org.junit.platform:junit-platform-launcher:${junitPlatformVersion}"
     ]
 }
