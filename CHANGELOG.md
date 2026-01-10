@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 1.7.3 - 2026-01-10
+- modernize build tooling (Gradle 8.14.3, Spring Boot 3.5.7)
+- update Lombok/Groovy/Spock versions, enable JUnit Platform
+- align Java target to 17, add Groovy json/sql modules for tests
+- make docker-compose executable auto-detect
+
 ## 1.7.2 - 2022-06-08
 bump db-scheduler version to 11.0
 
