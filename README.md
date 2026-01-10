@@ -1,5 +1,5 @@
-<a href="https://img.shields.io/badge/release-1.7.2-orange">
-        <img src="https://img.shields.io/badge/release-1.7.2-orange"
+<a href="https://img.shields.io/badge/release-1.7.3-orange">
+        <img src="https://img.shields.io/badge/release-1.7.3-orange"
             alt="Release version"/></a>
 
 # idempotence4j
@@ -8,6 +8,10 @@ idempotence4j is a lightweight library that provides support for handling idempo
 
 All actions are persisted to a database and it's expected that client's only going to use database master node
  to avoid any possible issues caused by the replication lag.
+
+## Requirements
+
+- Java 17+
 
 ## Overview
 
