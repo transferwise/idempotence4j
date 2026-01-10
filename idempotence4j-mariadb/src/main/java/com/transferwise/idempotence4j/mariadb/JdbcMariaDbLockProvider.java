@@ -8,7 +8,9 @@ import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 
+import javax.sql.DataSource;
 import java.util.Optional;
 
 @Slf4j
@@ -17,7 +19,21 @@ public class JdbcMariaDbLockProvider implements LockProvider {
     private final SqlActionMapper sqlMapper = new SqlActionMapper();
 
 	public JdbcMariaDbLockProvider(JdbcTemplate jdbcTemplate) {
-		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+		// Spring 6 switched to SQLExceptionSubclassTranslator by default, which doesn't use
+		// vendor-specific error codes. We need SQLErrorCodeSQLExceptionTranslator to properly
+		// translate MariaDB error 1205 (lock wait timeout) to CannotAcquireLockException.
+		//
+		// We create a new JdbcTemplate instead of mutating the passed instance to avoid
+		// affecting other components that may share it. Transaction safety is preserved
+		// because Spring's DataSourceTransactionManager binds connections at the DataSource
+		// level, not the JdbcTemplate level - both templates will use the same connection
+		// within a transaction.
+		DataSource dataSource = jdbcTemplate.getDataSource();
+		JdbcTemplate localJdbcTemplate = new JdbcTemplate(dataSource);
+		if (dataSource != null) {
+			localJdbcTemplate.setExceptionTranslator(new SQLErrorCodeSQLExceptionTranslator(dataSource));
+		}
+		this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(localJdbcTemplate);
 	}
 
 	@Override
