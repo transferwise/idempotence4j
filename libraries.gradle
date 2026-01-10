@@ -10,7 +10,7 @@ ext {
     groovyVersion = '4.0.29'
 
     hikariVersion = '6.2.1'
-    flywayVersion = '11.3.4'
+    flywayVersion = '10.22.0'
     postgresqlVersion = '42.7.5'
     mariaDbVersion = '3.5.2'
     dbSchedulerVersion = '11.0'
