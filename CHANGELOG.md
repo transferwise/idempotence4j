@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 1.7.3 - 2026-01-10
-- modernize build tooling (Gradle 8.14.3, Spring Boot 3.5.7)
-- update Lombok/Groovy/Spock versions, enable JUnit Platform
-- align Java target to 17, add Groovy json/sql modules for tests
-- make docker-compose executable auto-detect
+## 2.0.0 - 2026-01-12
+
+### Breaking Changes
+- Java 11 → 17
+- Spring Boot 2.2.4 → 3.5.7
+- Spring Framework 5.2.3 → 6.2.12
+- Jakarta EE namespace migration (javax.* → jakarta.*)
+
+### Fixed
+- **MariaDB lock conflict detection on Spring 6** - Spring 6 changed the default SQL exception translator, causing MariaDB error 1205 (lock wait timeout) to be translated to `UncategorizedSQLException` instead of `CannotAcquireLockException`. This broke lock conflict detection in `JdbcMariaDbLockProvider`. Fixed by explicitly using `SQLErrorCodeSQLExceptionTranslator`.
+
+### Changed
+- Gradle 5.6 → 8.14.3
+- Groovy 2.5 → 4.x
+- Spock 1.3 → 2.4-M5
 
 ## 1.7.2 - 2022-06-08
 bump db-scheduler version to 11.0
