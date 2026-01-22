@@ -12,6 +12,7 @@ dependencies {
 
     integrationTestImplementation 'org.springframework.boot:spring-boot-starter-test'
     integrationTestImplementation 'org.springframework.boot:spring-boot-starter-web'
+    integrationTestImplementation 'org.springframework.boot:spring-boot-starter-jdbc'
     integrationTestImplementation project(':idempotence4j-core')
     integrationTestImplementation project(':idempotence4j-postgres')
     integrationTestImplementation project(':idempotence4j-metrics')
