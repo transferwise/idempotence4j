@@ -4,8 +4,7 @@ ext {
     jacksonVersion = '2.18.2'
     micrometerVersion = '1.14.5'
 
-    springVersion = '3.5.7'
-    springJdbcVersion = '6.2.12'
+    springVersion = findProperty('springBootVersion') ?: '3.5.7'
 
     groovyVersion = '4.0.29'
 
@@ -22,7 +21,6 @@ ext {
 
     spockVersion = '2.4-M5-groovy-4.0'
     junitVersion = '4.12'
-    junitPlatformVersion = '1.12.2'
 
     libraries = [
         lombok: "org.projectlombok:lombok:${lombokVersion}",
@@ -32,7 +30,7 @@ ext {
         micrometer_prometheus: "io.micrometer:micrometer-registry-prometheus:${micrometerVersion}",
 
         spring_boot: "org.springframework.boot:spring-boot-dependencies:${springVersion}",
-        spring_jdbc: "org.springframework:spring-jdbc:${springJdbcVersion}",
+        spring_jdbc: "org.springframework:spring-jdbc",
 
         groovy: "org.apache.groovy:groovy:${groovyVersion}",
         groovy_json: "org.apache.groovy:groovy-json:${groovyVersion}",
@@ -58,6 +56,6 @@ ext {
         spock: "org.spockframework:spock-core:${spockVersion}",
         spock_spring: "org.spockframework:spock-spring:${spockVersion}",
         junit: "junit:junit:${junitVersion}",
-        junit_platform_launcher: "org.junit.platform:junit-platform-launcher:${junitPlatformVersion}"
+        junit_platform_launcher: "org.junit.platform:junit-platform-launcher"
     ]
 }

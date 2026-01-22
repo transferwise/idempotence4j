@@ -1,12 +1,4 @@
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.unbroken-dome.test-sets'
 apply plugin: 'docker-compose'
-
-dependencyManagement {
-	imports {
-		mavenBom(libraries.spring_boot)
-	}
-}
 
 dependencies {
     implementation project(':idempotence4j-core')

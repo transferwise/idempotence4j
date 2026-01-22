@@ -25,6 +25,7 @@ allprojects {
 	apply plugin: 'groovy'
 	apply plugin: 'maven-publish'
 	apply plugin: 'org.unbroken-dome.test-sets'
+	apply plugin: 'io.spring.dependency-management'
 	apply from: "${rootDir}/libraries.gradle"
 	apply from: "${rootDir}/publish.gradle"
 
@@ -33,6 +34,12 @@ allprojects {
 	repositories {
 		mavenCentral()
 		mavenLocal()
+	}
+
+	dependencyManagement {
+		imports {
+			mavenBom(libraries.spring_boot)
+		}
 	}
 
 	testSets {
