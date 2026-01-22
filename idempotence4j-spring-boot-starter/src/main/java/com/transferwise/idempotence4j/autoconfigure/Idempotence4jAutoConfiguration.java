@@ -105,7 +105,7 @@ public class Idempotence4jAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         public LockProvider mariaDbLockProvider(DataSource dataSource) {
-            return new JdbcMariaDbLockProvider(new JdbcTemplate(dataSource));
+            return new JdbcMariaDbLockProvider(dataSource);
         }
     }
 

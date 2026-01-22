@@ -13,7 +13,7 @@ class JdbcMariaDbLockProviderIntegrationTest extends IntegrationTest {
     def transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource))
     def repository = new JdbcMariaDbActionRepository(jdbcTemplate)
     @Subject
-    def lockProvider = new JdbcMariaDbLockProvider(jdbcTemplate)
+    def lockProvider = new JdbcMariaDbLockProvider(dataSource)
 
     def "should successfully acquire lock and retrieve locked action"() {
         given:

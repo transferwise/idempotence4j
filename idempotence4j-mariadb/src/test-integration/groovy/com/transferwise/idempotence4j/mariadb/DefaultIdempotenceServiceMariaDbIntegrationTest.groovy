@@ -25,7 +25,7 @@ import static com.transferwise.idempotence4j.factory.ActionTestFactory.anActionI
 class DefaultIdempotenceServiceMariaDbIntegrationTest extends IntegrationTest {
     def transactionManager = new DataSourceTransactionManager(dataSource)
     def jdbcTemplate = new JdbcTemplate(dataSource)
-    def lockProvider = new JdbcMariaDbLockProvider(jdbcTemplate)
+    def lockProvider = new JdbcMariaDbLockProvider(dataSource)
     def repository = new JdbcMariaDbActionRepository(jdbcTemplate)
     def resultSerializer = new JsonResultSerializer(new ObjectMapper().registerModule(new JavaTimeModule()))
     def metricsPublisher = Mock(MetricsPublisher)
