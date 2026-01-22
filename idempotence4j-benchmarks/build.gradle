@@ -1,12 +1,5 @@
 apply plugin: 'docker-compose'
-apply plugin: 'io.spring.dependency-management'
 apply plugin: 'org.springframework.boot'
-
-dependencyManagement {
-    imports {
-        mavenBom libraries.spring_boot
-    }
-}
 
 sourceSets {
     jmh {
@@ -60,5 +53,5 @@ jar {
 }
 
 bootJar {
-    classifier = 'application'
+    archiveClassifier = 'application'
 }

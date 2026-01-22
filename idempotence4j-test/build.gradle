@@ -1,4 +1,6 @@
 dependencies {
     implementation project(':idempotence4j-core')
     implementation libraries.jackson_datatype
+    implementation libraries.groovy_json
+    implementation libraries.groovy_sql
 }

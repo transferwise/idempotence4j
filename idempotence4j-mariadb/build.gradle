@@ -1,12 +1,4 @@
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.unbroken-dome.test-sets'
 apply plugin: 'docker-compose'
-
-dependencyManagement {
-	imports {
-		mavenBom(libraries.spring_boot)
-	}
-}
 
 dependencies {
     implementation project(':idempotence4j-core')
@@ -20,9 +12,11 @@ dependencies {
 
 	integrationTestImplementation libraries.hikari
 	integrationTestImplementation libraries.flyway
-	integrationTestImplementation libraries.mariadb
+	integrationTestImplementation libraries.flyway_mysql
+    integrationTestImplementation libraries.mariadb
     integrationTestImplementation libraries.jackson_datatype
-	integrationTestImplementation libraries.spock_spring
+    integrationTestImplementation libraries.spock_spring
+    integrationTestImplementation libraries.groovy_sql
 }
 
 dockerCompose {

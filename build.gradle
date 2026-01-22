@@ -1,5 +1,5 @@
 wrapper {
-	gradleVersion = '7.3.3'
+	gradleVersion = '8.14.3'
 }
 
 buildscript {
@@ -10,10 +10,10 @@ buildscript {
 		mavenLocal()
 	}
 	dependencies {
-		classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:4.0.0'
+		classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:4.1.0'
 		classpath "com.avast.gradle:gradle-docker-compose-plugin:0.15.0"
-        classpath "io.spring.gradle:dependency-management-plugin:1.0.10.RELEASE"
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.2.4.RELEASE"
+        classpath "io.spring.gradle:dependency-management-plugin:1.1.7"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:3.5.7"
 	}
 }
 
@@ -25,14 +25,21 @@ allprojects {
 	apply plugin: 'groovy'
 	apply plugin: 'maven-publish'
 	apply plugin: 'org.unbroken-dome.test-sets'
+	apply plugin: 'io.spring.dependency-management'
 	apply from: "${rootDir}/libraries.gradle"
 	apply from: "${rootDir}/publish.gradle"
 
-	sourceCompatibility = '1.9'
-	targetCompatibility = '1.9'
+	sourceCompatibility = '17'
+	targetCompatibility = '17'
 	repositories {
 		mavenCentral()
 		mavenLocal()
+	}
+
+	dependencyManagement {
+		imports {
+			mavenBom(libraries.spring_boot)
+		}
 	}
 
 	testSets {
@@ -51,9 +58,12 @@ allprojects {
         testImplementation libraries.groovy
         testImplementation libraries.junit
         testImplementation libraries.spock
+        testRuntimeOnly libraries.junit_platform_launcher
+        integrationTestRuntimeOnly libraries.junit_platform_launcher
 	}
 
 	test {
+		useJUnitPlatform()
 		reports.junitXml.destination = file('build/test-results')
 
 		testLogging {
@@ -64,6 +74,7 @@ allprojects {
 	}
 
 	integrationTest {
+		useJUnitPlatform()
 		reports.junitXml.destination = file('build/test-integration-results')
 
 		testLogging {
@@ -76,6 +87,14 @@ allprojects {
 
 	ext.isRunningOnCI = {
 		System.getenv("CI") == "true"
+	}
+
+	plugins.withId('docker-compose') {
+		def candidates = ['/opt/homebrew/bin/docker-compose', '/usr/local/bin/docker-compose']
+		def resolved = candidates.find { new File(it).exists() }
+		dockerCompose {
+			executable = resolved ?: 'docker-compose'
+		}
 	}
 }
 
