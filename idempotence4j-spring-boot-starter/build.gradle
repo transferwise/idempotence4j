@@ -18,12 +18,20 @@ dependencies {
     integrationTestImplementation project(':idempotence4j-metrics')
     integrationTestImplementation libraries.hikari
     integrationTestImplementation libraries.postgresql
+    integrationTestImplementation libraries.mariadb
+    integrationTestImplementation libraries.flyway
+    integrationTestImplementation libraries.flyway_postgres
+    integrationTestImplementation libraries.flyway_mysql
     integrationTestImplementation libraries.spock_spring
+    // Spring Boot 4 moved the Flyway auto-configuration out of spring-boot-autoconfigure
+    if (springVersion.startsWith('4.')) {
+        integrationTestImplementation 'org.springframework.boot:spring-boot-flyway'
+    }
 }
 
 dockerCompose {
     useComposeFiles = ["${rootDir}/gradle/docker-compose/docker-compose.yml"]
-    startedServices = ['postgres']
+    startedServices = ['postgres', 'mariadb']
     stopContainers = true
     removeContainers = true
 }

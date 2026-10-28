@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 2.0.1 - 2026-10-28
+
+### Fixed
+- Spring Boot starter wiring the MariaDB `ActionRepository` and `LockProvider` on a PostgreSQL datasource (#64). The implementation is now picked from the datasource database product name
+  - Startup now fails for other databases (for example H2 or Oracle) unless the application defines its own `ActionRepository` and `LockProvider` beans. Before, the starter started and failed on the first action
+
 ## 2.0.0 - 2026-01-12
 
 ### Breaking Changes
