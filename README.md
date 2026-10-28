@@ -28,33 +28,55 @@ idempotence4j provides several modules:
 
 When invoking idempotence service clients are expected to provide:
 
-- `actionId` - unique identifier for the current action
+- `actionId` - unique identifier for the current action, made of a `key`, an action `type` and a `client`
 - `onRetry` - function that maps persisted result of previously successful action to client result
 - `procedure` - supplier that executes the action processing logic and returns result to client
 - `toRecord` - function that maps client result to the one being persisted in the database
 - `recordType` - type of the stored record required for a later de-serialisation
 
+Two types are involved: the result returned to the caller (`R`) and the record persisted with the action (`S`).
+In the example below the caller gets a `Transfer` back, while only its `TransferId` is persisted.
+`Transfer`, `TransferId` and `TransferRepository` are application classes, not part of idempotence4j.
+
 ```java
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.transferwise.idempotence4j.core.ActionId;
+import com.transferwise.idempotence4j.core.IdempotenceService;
 
-@AllArgsConstructor
-public class ApplicationService {
+@RequiredArgsConstructor
+public class TransferService {
     private final IdempotenceService idempotenceService;
-    private final ResultRepository repository;
+    private final TransferRepository transferRepository;
 
-    public Result execute(ActionId actionId, String args[]) {
-        Result result = idempotenceService.execute(actionId, this::byId, () -> {
-            //execution logic
-            return new Result();
-        }, Result::getId, new TypeReference<ResultId>(){});
-        return result;
-    }
+    public Transfer create(UUID requestId, String clientId, CreateTransferCommand command) {
+        ActionId actionId = new ActionId(requestId, "CREATE_TRANSFER", clientId);
 
-    private Result byId(ResultId resultId) {
-        return repository.get(resultId);
+        return idempotenceService.execute(
+            actionId,
+            transferRepository::get,                                 // onRetry: TransferId -> Transfer
+            () -> transferRepository.save(Transfer.create(command)), // procedure
+            Transfer::getId,                                         // toRecord: Transfer -> TransferId
+            new TypeReference<TransferId>() {}                       // recordType
+        );
     }
 }
-
 ```
+
+On the first call the procedure runs and the `TransferId` is stored. A retry with the same `ActionId` skips the procedure
+and calls `onRetry` with the stored `TransferId`, so the caller gets the same transfer back.
+
+When the result itself can be persisted, there is a shorter overload:
+
+```java
+Transfer transfer = idempotenceService.execute(actionId, () -> createTransfer(command), new TypeReference<Transfer>() {});
+```
+
+### Transactions and concurrent requests
+
+- The procedure runs in a transaction together with the update of the action record. If it throws, both are rolled back and the action can be retried.
+- If the caller already has a transaction, the procedure joins it.
+- While an action is in progress, another request with the same `ActionId` fails fast with `ConflictingActionException`.
+  It does not wait for the first request, so map it to a retryable response, for example HTTP `409 Conflict`.
 
 ## Adding idempotence4j to your build
 
@@ -112,7 +134,9 @@ dependencies {
 
 Please **only use the following configuration approach** if your flyway configuration has `flyway.outOfOrder` flag enabled, otherwise please create an exact copy of these migrations in your project flyway module.
 
-`Postgres` module contains Flyway migration definitions to keep required tables schemas up-to-date. Both `yaml` and `java` configuration examples provided below:
+`Postgres` and `MariaDb` modules contain Flyway migration definitions to keep required tables schemas up-to-date,
+located in `classpath:db/idempotence4j/postgres` and `classpath:db/idempotence4j/mariadb` respectively.
+Both `yaml` and `java` configuration examples for `Postgres` are provided below:
 
 ```yaml
 
@@ -129,12 +153,12 @@ Please **only use the following configuration approach** if your flyway configur
 ```java
 
 @Bean
-public Flyway getFlyway(dataSource) {
+public Flyway flyway(DataSource dataSource) {
     var configuration = new FluentConfiguration()
         .dataSource(dataSource)
-        .locations("classpath:db/migration, classpath:db/idempotence4j/postgres")
+        .locations("classpath:db/migration", "classpath:db/idempotence4j/postgres");
 
-    return new Flyway(configuration)
+    return new Flyway(configuration);
 }
 
 ```
