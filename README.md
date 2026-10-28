@@ -1,5 +1,5 @@
-<a href="https://img.shields.io/badge/release-2.0.0-orange">
-        <img src="https://img.shields.io/badge/release-2.0.0-orange"
+<a href="https://img.shields.io/badge/release-2.0.1-orange">
+        <img src="https://img.shields.io/badge/release-2.0.1-orange"
             alt="Release version"/></a>
 
 # idempotence4j
@@ -11,7 +11,7 @@ All actions are persisted to a database and it's expected that client's only goi
 
 ## Requirements
 
-- Java 17+
+- Java 17+ (tested on 17, 21 and 25)
 
 ## Overview
 

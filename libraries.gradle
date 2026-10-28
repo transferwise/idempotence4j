@@ -1,5 +1,5 @@
 ext {
-    lombokVersion = '1.18.32'
+    lombokVersion = '1.18.48'
     slf4jVersion = '2.0.17'
     jacksonVersion = '2.18.2'
     micrometerVersion = '1.14.5'

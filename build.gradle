@@ -1,17 +1,16 @@
 wrapper {
-	gradleVersion = '8.14.3'
+	gradleVersion = '9.8.2'
 }
 
 buildscript {
 	repositories {
 		mavenCentral()
-		maven { url "https://jitpack.io" }
-		maven { url 'https://plugins.gradle.org/m2/' }
+		maven { url = "https://jitpack.io" }
+		maven { url = 'https://plugins.gradle.org/m2/' }
 		mavenLocal()
 	}
 	dependencies {
-		classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:4.1.0'
-		classpath "com.avast.gradle:gradle-docker-compose-plugin:0.15.0"
+		classpath "com.avast.gradle:gradle-docker-compose-plugin:0.17.21"
         classpath "io.spring.gradle:dependency-management-plugin:1.1.7"
         classpath "org.springframework.boot:spring-boot-gradle-plugin:3.5.7"
 	}
@@ -24,13 +23,18 @@ allprojects {
 	apply plugin: 'java-library'
 	apply plugin: 'groovy'
 	apply plugin: 'maven-publish'
-	apply plugin: 'org.unbroken-dome.test-sets'
 	apply plugin: 'io.spring.dependency-management'
 	apply from: "${rootDir}/libraries.gradle"
 	apply from: "${rootDir}/publish.gradle"
 
-	sourceCompatibility = '17'
-	targetCompatibility = '17'
+	java {
+		sourceCompatibility = JavaVersion.VERSION_17
+		targetCompatibility = JavaVersion.VERSION_17
+	}
+	// keep Java 17 bytecode and API when compiling on a newer JDK
+	tasks.withType(JavaCompile).configureEach {
+		options.release = 17
+	}
 	repositories {
 		mavenCentral()
 		mavenLocal()
@@ -42,10 +46,30 @@ allprojects {
 		}
 	}
 
-	testSets {
-		integrationTest {
-			dirName = 'test-integration'
+	testing {
+		suites {
+			configureEach {
+				useSpock(spockVersion)
+			}
+			integrationTest(JvmTestSuite) {
+				sources {
+					java.srcDirs = ['src/test-integration/java']
+					groovy.srcDirs = ['src/test-integration/groovy']
+					resources.srcDirs = ['src/test-integration/resources']
+				}
+				dependencies {
+					implementation project()
+				}
+			}
 		}
+	}
+
+	// integration tests share the unit test dependencies
+	configurations {
+		integrationTestImplementation.extendsFrom testImplementation
+		integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+		integrationTestCompileOnly.extendsFrom testCompileOnly
+		integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
 	}
 
 	dependencies {
@@ -63,8 +87,7 @@ allprojects {
 	}
 
 	test {
-		useJUnitPlatform()
-		reports.junitXml.destination = file('build/test-results')
+		reports.junitXml.outputLocation = file('build/test-results')
 
 		testLogging {
 			events "passed", "skipped", "failed", "standardError"
@@ -74,8 +97,8 @@ allprojects {
 	}
 
 	integrationTest {
-		useJUnitPlatform()
-		reports.junitXml.destination = file('build/test-integration-results')
+		reports.junitXml.outputLocation = file('build/test-integration-results')
+		shouldRunAfter test
 
 		testLogging {
 			events "passed", "skipped", "failed", "standardError"
@@ -90,10 +113,12 @@ allprojects {
 	}
 
 	plugins.withId('docker-compose') {
-		def candidates = ['/opt/homebrew/bin/docker-compose', '/usr/local/bin/docker-compose']
-		def resolved = candidates.find { new File(it).exists() }
+		def resolveExecutable = { String name ->
+			['/opt/homebrew/bin', '/usr/local/bin'].collect { "${it}/${name}" }.find { new File(it).exists() } ?: name
+		}
 		dockerCompose {
-			executable = resolved ?: 'docker-compose'
+			executable = resolveExecutable('docker-compose')
+			dockerExecutable = resolveExecutable('docker')
 		}
 	}
 }

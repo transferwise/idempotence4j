@@ -57,7 +57,7 @@ publishing {
 
 	repositories {
 		maven {
-			url System.env.MAVEN_URL as String
+			url = System.env.MAVEN_URL as String
 			credentials {
 				username = System.env.MAVEN_USER as String
 				password = System.env.MAVEN_PASSWORD as String
