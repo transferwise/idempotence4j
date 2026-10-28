@@ -16,17 +16,27 @@ import com.transferwise.idempotence4j.mariadb.JdbcMariaDbLockProvider;
 import com.transferwise.idempotence4j.metrics.micrometer.MicrometerMetricsPublisher;
 import com.transferwise.idempotence4j.postgres.JdbcPostgresActionRepository;
 import com.transferwise.idempotence4j.postgres.JdbcPostgresLockProvider;
+import com.transferwise.idempotence4j.web.IdempotentClientResolver;
+import com.transferwise.idempotence4j.web.IdempotentMethodInterceptor;
+import com.transferwise.idempotence4j.web.IdempotentPointcut;
+import com.transferwise.idempotence4j.web.PrincipalClientResolver;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.Advisor;
+import org.springframework.aop.support.DefaultPointcutAdvisor;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Role;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -140,6 +150,44 @@ public class Idempotence4jAutoConfiguration {
             );
 
             return new RetentionService(dataSource, actionRepository, retentionPolicy);
+        }
+    }
+
+    @Configuration
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+    @ConditionalOnClass(name = "org.springframework.web.servlet.DispatcherServlet")
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+    public static class WebAutoConfiguration {
+        @Bean
+        @ConfigurationProperties(prefix = "idempotence4j.web")
+        public IdempotentWebProperties idempotentWebProperties() {
+            return new IdempotentWebProperties();
+        }
+
+        @Bean
+        @ConditionalOnMissingBean
+        public IdempotentClientResolver idempotentClientResolver() {
+            return new PrincipalClientResolver();
+        }
+
+        // infrastructure role so Spring Boot's auto proxy creator applies it, dependencies resolved on first request
+        @Bean
+        @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+        public static Advisor idempotentMethodAdvisor(
+            ObjectProvider<IdempotenceService> idempotenceService,
+            ObjectProvider<IdempotentClientResolver> clientResolver,
+            ObjectProvider<IdempotentWebProperties> webProperties,
+            ObjectProvider<ObjectMapper> objectMapper
+        ) {
+            return new DefaultPointcutAdvisor(
+                new IdempotentPointcut(),
+                new IdempotentMethodInterceptor(
+                    idempotenceService::getObject,
+                    clientResolver::getObject,
+                    () -> webProperties.getObject().getKeyHeader(),
+                    objectMapper::getIfUnique
+                )
+            );
         }
     }
 }

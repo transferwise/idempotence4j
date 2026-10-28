@@ -23,6 +23,7 @@ public class SqlAction extends Action {
         SqlAction sqlAction = new SqlAction(
             action.getActionId(),
             action.getCreatedAt(),
+            action.getFingerprint().orElse(null),
             action.getLastRunAt().orElse(null),
             action.getCompletedAt().orElse(null),
             action.getResult().orElse(null)
@@ -39,11 +40,12 @@ public class SqlAction extends Action {
     private SqlAction(
         @NonNull ActionId actionId,
         @NonNull Instant createdAt,
+        String fingerprint,
         Instant lastRunAt,
         Instant completedAt,
         Result result
     ) {
-        super(actionId, createdAt, lastRunAt, completedAt, result);
+        super(actionId, createdAt, fingerprint, lastRunAt, completedAt, result);
     }
 
     public Optional<Long> getSequentialId() {

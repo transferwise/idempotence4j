@@ -8,5 +8,6 @@ include(
     ':idempotence4j-test',
     ':idempotence4j-spring-boot-starter',
     ':idempotence4j-metrics',
+    ':idempotence4j-spring-web',
     ':idempotence4j-benchmarks'
 )

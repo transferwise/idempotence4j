@@ -63,7 +63,7 @@ public class JdbcMariaDbLockProvider implements LockProvider {
     //@formatter:off
     private static final String LOCK_SQL =
             "SELECT " +
-                "seq_id, `key`, type, client, created_at, last_run_at, completed_at, result, result_type " +
+                "seq_id, `key`, type, client, created_at, fingerprint, last_run_at, completed_at, result, result_type " +
             "FROM idempotent_action " +
             "WHERE " +
                 "`key` = ? " +

@@ -24,6 +24,6 @@ public class Metrics {
     }
 
     public enum Outcome {
-        SUCCESS, ERROR, CONFLICT
+        SUCCESS, ERROR, CONFLICT, MISMATCH
     }
 }

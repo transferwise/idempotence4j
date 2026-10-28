@@ -1,0 +1,14 @@
+dependencies {
+    implementation project(':idempotence4j-core')
+    implementation libraries.jackson_datatype
+    implementation 'org.springframework:spring-aop'
+
+    // provided by the application, so non web applications using the starter don't get Spring MVC
+    compileOnly 'org.springframework:spring-webmvc'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
+
+    testImplementation project(':idempotence4j-test')
+    testImplementation 'org.springframework:spring-webmvc'
+    testImplementation 'org.springframework:spring-test'
+    testImplementation 'jakarta.servlet:jakarta.servlet-api'
+}

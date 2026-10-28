@@ -1,6 +1,7 @@
 package com.transferwise.idempotence4j.core
 
 import com.fasterxml.jackson.core.type.TypeReference
+import com.transferwise.idempotence4j.core.exception.ActionPayloadMismatchException
 import com.transferwise.idempotence4j.core.exception.ConflictingActionException
 import com.transferwise.idempotence4j.core.exception.ResultSerializationException
 import com.transferwise.idempotence4j.core.metrics.Metrics
@@ -16,6 +17,7 @@ import java.util.function.Supplier
 
 import static com.transferwise.idempotence4j.core.metrics.Metrics.Outcome.CONFLICT
 import static com.transferwise.idempotence4j.core.metrics.Metrics.Outcome.ERROR
+import static com.transferwise.idempotence4j.core.metrics.Metrics.Outcome.MISMATCH
 import static com.transferwise.idempotence4j.core.metrics.Metrics.Outcome.SUCCESS
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.aResult
 import static com.transferwise.idempotence4j.factory.ActionTestFactory.anAction
@@ -187,5 +189,123 @@ class DefaultIdempotenceServiceTest extends Specification {
         then:
             1 * metricsPublisher.publish(_ as Metrics)
             thrown(ResultSerializationException)
+    }
+
+    def "should persist fingerprint when submitting a new action"() {
+        given:
+            def actionId = anActionId()
+            def action = anAction(actionId: actionId, fingerprint: "fp-1")
+        and:
+            resultSerializer.serialize(_) >> "result".getBytes()
+            resultSerializer.getType() >> "json"
+        when:
+            service.execute(actionId, "fp-1", { -> aResult() }, new TypeReference<TestResult>() {})
+        then:
+            1 * actionRepository.insertOrGet({
+                it.actionId == actionId && it.fingerprint.get() == "fp-1"
+            } as Action) >> action
+            1 * lockProvider.lock(actionId) >> Optional.of(new NoOpLock(action))
+            1 * actionRepository.update(_ as Action) >> action
+    }
+
+    def "should fail with mismatch exception for a completed action submitted with a different fingerprint"() {
+        given:
+            def actionId = anActionId()
+        and:
+            def onRetry = Mock(Function)
+            def procedure = Mock(Supplier)
+        and:
+            actionRepository.insertOrGet(_ as Action) >> anAction(actionId: actionId, isCompleted: true, fingerprint: "fp-1")
+        when:
+            service.execute(actionId, "fp-2", onRetry, procedure, Mock(Function), new TypeReference<TestResult>() {})
+        then:
+            thrown(ActionPayloadMismatchException)
+            0 * lockProvider.lock(_)
+            0 * resultSerializer.deserialize(*_)
+            0 * onRetry.apply(_)
+            0 * procedure.get()
+        and:
+            1 * metricsPublisher.publish({
+                it.outcome == MISMATCH
+                !it.isRetry
+            } as Metrics)
+    }
+
+    def "should fail with mismatch exception for an in progress action submitted with a different fingerprint"() {
+        given:
+            def actionId = anActionId()
+            def procedure = Mock(Supplier)
+        and:
+            actionRepository.insertOrGet(_ as Action) >> anAction(actionId: actionId, fingerprint: "fp-1")
+        when:
+            service.execute(actionId, "fp-2", procedure, new TypeReference<TestResult>() {})
+        then:
+            thrown(ActionPayloadMismatchException)
+            0 * lockProvider.lock(_)
+            0 * procedure.get()
+            1 * metricsPublisher.publish({
+                it.outcome == MISMATCH
+            } as Metrics)
+    }
+
+    def "should fail with mismatch exception when the locked action has a different fingerprint"() {
+        given:
+            def actionId = anActionId()
+            def procedure = Mock(Supplier)
+        and: "a concurrent first submission returned its own action on insert"
+            actionRepository.insertOrGet(_ as Action) >> anAction(actionId: actionId, fingerprint: "fp-2")
+            lockProvider.lock(actionId) >> Optional.of(new NoOpLock(anAction(actionId: actionId, fingerprint: "fp-1")))
+        when:
+            service.execute(actionId, "fp-2", procedure, new TypeReference<TestResult>() {})
+        then:
+            thrown(ActionPayloadMismatchException)
+            0 * procedure.get()
+            0 * actionRepository.update(_)
+            1 * metricsPublisher.publish({
+                it.outcome == MISMATCH
+            } as Metrics)
+    }
+
+    def "should return persisted result on retry with the same fingerprint"() {
+        given:
+            def actionId = anActionId()
+            def persistedResult = aResult()
+            def onRetry = Mock(Function)
+        and:
+            actionRepository.insertOrGet(_ as Action) >> anAction(actionId: actionId, isCompleted: true, fingerprint: "fp-1")
+            resultSerializer.deserialize(_ as byte[], _ as Type) >> persistedResult
+        when:
+            service.execute(actionId, "fp-1", onRetry, Mock(Supplier), Mock(Function), new TypeReference<TestResult>() {})
+        then:
+            1 * onRetry.apply(persistedResult)
+            1 * metricsPublisher.publish({
+                it.outcome == SUCCESS
+                it.isRetry
+            } as Metrics)
+    }
+
+    def "should reject a fingerprint longer than the maximum length before persisting the action"() {
+        given:
+            def procedure = Mock(Supplier)
+        when:
+            service.execute(anActionId(), "a" * (Action.MAX_FINGERPRINT_LENGTH + 1), procedure, new TypeReference<TestResult>() {})
+        then:
+            thrown(IllegalArgumentException)
+            0 * actionRepository.insertOrGet(_)
+            0 * procedure.get()
+    }
+
+    def "should skip fingerprint check for an action persisted without a fingerprint"() {
+        given:
+            def actionId = anActionId()
+            def persistedResult = aResult()
+            def onRetry = Mock(Function)
+        and:
+            actionRepository.insertOrGet(_ as Action) >> anAction(actionId: actionId, isCompleted: true)
+            resultSerializer.deserialize(_ as byte[], _ as Type) >> persistedResult
+        when:
+            service.execute(actionId, "fp-2", onRetry, Mock(Supplier), Mock(Function), new TypeReference<TestResult>() {})
+        then:
+            1 * onRetry.apply(persistedResult)
     }
 }

@@ -5,6 +5,7 @@ dependencies {
     implementation project(':idempotence4j-postgres')
     implementation project(':idempotence4j-mariadb')
     implementation project(':idempotence4j-metrics')
+    implementation project(':idempotence4j-spring-web')
 
     implementation 'org.springframework.boot:spring-boot-autoconfigure'
     implementation libraries.spring_jdbc
@@ -17,6 +18,8 @@ dependencies {
     integrationTestImplementation project(':idempotence4j-postgres')
     integrationTestImplementation project(':idempotence4j-metrics')
     integrationTestImplementation libraries.hikari
+    integrationTestImplementation libraries.flyway
+    integrationTestImplementation libraries.flyway_postgres
     integrationTestImplementation libraries.postgresql
     integrationTestImplementation libraries.spock_spring
 }

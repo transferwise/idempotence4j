@@ -26,4 +26,15 @@ class JdbcMariaDbLockProviderIntegrationTest extends IntegrationTest {
             lock.isPresent()
             lock.get().getLockedAction().actionId == actionId
     }
+
+    def "should retrieve fingerprint of the locked action"() {
+        given:
+            def actionId = anActionId()
+        and:
+            repository.insertOrGet(new Action(actionId, "fp-1"))
+        when:
+            def lock = transactionTemplate.execute({ lockProvider.lock(actionId) } )
+        then:
+            lock.get().getLockedAction().fingerprint.get() == "fp-1"
+    }
 }

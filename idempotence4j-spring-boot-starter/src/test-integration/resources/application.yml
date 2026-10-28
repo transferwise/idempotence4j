@@ -10,6 +10,9 @@ spring:
   sql:
     init:
       mode: never
+  # migrations are applied by the tests, see IdempotentWebIntegrationTest
+  flyway:
+    enabled: false
 
 idempotence4j:
   retention:
