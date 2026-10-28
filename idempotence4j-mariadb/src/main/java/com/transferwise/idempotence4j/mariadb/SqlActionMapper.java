@@ -16,6 +16,7 @@ public class SqlActionMapper {
     public Action toEntity(ResultSet rs) throws SQLException {
         SqlAction action = new SqlAction(rs.getLong("seq_id"), toId(rs));
 
+        hydrateField("fingerprint", action, rs.getString("fingerprint"));
         hydrateResult(action, rs);
         hydrateInstant(action, rs, "createdAt", "created_at");
         hydrateInstant(action, rs, "lastRunAt", "last_run_at");
@@ -35,6 +36,7 @@ public class SqlActionMapper {
         parameters.addValue("type", action.getActionId().getType());
         parameters.addValue("client", action.getActionId().getClient());
         parameters.addValue("createdAt", Timestamp.from(action.getCreatedAt()));
+        parameters.addValue("fingerprint", action.getFingerprint().orElse(null));
         parameters.addValue("lastRunAt", action.getLastRunAt().map(Timestamp::from).orElse(null));
         parameters.addValue("completedAt", action.getCompletedAt().map(Timestamp::from).orElse(null));
         parameters.addValue("result", action.hasResult() ? action.getResult().get().getContent() : null);

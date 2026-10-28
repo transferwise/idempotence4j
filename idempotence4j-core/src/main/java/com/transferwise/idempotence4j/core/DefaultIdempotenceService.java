@@ -1,5 +1,6 @@
 package com.transferwise.idempotence4j.core;
 
+import com.transferwise.idempotence4j.core.exception.ActionPayloadMismatchException;
 import com.transferwise.idempotence4j.core.exception.ResultSerializationException;
 import com.transferwise.idempotence4j.core.exception.ConflictingActionException;
 import com.transferwise.idempotence4j.core.metrics.Metrics;
@@ -52,22 +53,35 @@ public class DefaultIdempotenceService implements IdempotenceService {
      * @param toRecord mapping of procedure result to the model that going to be persisted and provided {@code onRetry}
      */
     public <S, R> R execute(ActionId actionId, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Type recordType) {
+        return execute(actionId, null, onRetry, procedure, toRecord, recordType);
+    }
+
+    /**
+     * Same as {@link #execute(ActionId, Function, Supplier, Function, Type)}, additionally rejecting an action
+     * that was already submitted with a different payload fingerprint
+     *
+     * @param fingerprint digest of the request payload, {@code null} disables the check
+     */
+    @Override
+    public <S, R> R execute(ActionId actionId, String fingerprint, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Type recordType) {
         final Metrics metrics = new Metrics(actionId);
 
         R result = new MeasuredExecutor()
             .onError(ConflictingActionException.class, (duration, ex) -> metrics.record(duration, CONFLICT))
+            .onError(ActionPayloadMismatchException.class, (duration, ex) -> metrics.record(duration, MISMATCH))
             .onUnexpectedError((duration, ex) -> metrics.record(duration, ERROR))
             .onSuccess((duration) -> metrics.record(duration, SUCCESS))
             .onComplete(() -> metricsPublisher.publish(metrics))
-            .submit(() -> execute(actionId, onRetry, procedure, toRecord, recordType, metrics));
+            .submit(() -> execute(actionId, fingerprint, onRetry, procedure, toRecord, recordType, metrics));
 
         return result;
     }
 
-    private <S, R> R execute(ActionId actionId, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Type recordType, Metrics metrics) {
+    private <S, R> R execute(ActionId actionId, String fingerprint, Function<S, R> onRetry, Supplier<R> procedure, Function<R, S> toRecord, Type recordType, Metrics metrics) {
         Action action = newTransaction(getTransactionName("upsert"), TransactionDefinition.PROPAGATION_REQUIRES_NEW)
-            .execute(status -> actionRepository.insertOrGet(new Action(actionId)));
+            .execute(status -> actionRepository.insertOrGet(new Action(actionId, fingerprint)));
 
+        verifyFingerprint(action, fingerprint);
         if (action.hasCompleted()) {
             return processRetry(action, onRetry, recordType, metrics);
         }
@@ -77,6 +91,8 @@ public class DefaultIdempotenceService implements IdempotenceService {
 
             try (lock) {
                 Action pendingAction = lock.getLockedAction();
+                // concurrent first submissions may not see each other on insert, the locked row is the persisted one
+                verifyFingerprint(pendingAction, fingerprint);
                 if (pendingAction.hasCompleted()) {
                     return processRetry(pendingAction, onRetry, recordType, metrics);
                 }
@@ -84,6 +100,12 @@ public class DefaultIdempotenceService implements IdempotenceService {
                 return runProcedure(action, procedure, toRecord);
             }
         });
+    }
+
+    private void verifyFingerprint(Action action, String fingerprint) {
+        if (action.hasDifferentFingerprint(fingerprint)) {
+            throw new ActionPayloadMismatchException("Action already submitted with a different payload");
+        }
     }
 
     private <S, R> R runProcedure(Action action, Supplier<R> procedure, Function<R, S> toRecord) {

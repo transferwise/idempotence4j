@@ -14,7 +14,7 @@ class ActionSqlMapperTest extends Specification {
 
     def "should properly convert action into sql parameter map"() {
         given:
-            def action = anAction(isCompleted: true)
+            def action = anAction(isCompleted: true, fingerprint: "fp-1")
 
         when:
             def parameterMap = mapper.toSql(action)
@@ -24,6 +24,7 @@ class ActionSqlMapperTest extends Specification {
             parameterMap.getValue('type') == action.actionId.type
             parameterMap.getValue('client') == action.actionId.client
             parameterMap.getValue('createdAt').getTime() == action.createdAt.toEpochMilli()
+            parameterMap.getValue('fingerprint') == "fp-1"
             parameterMap.getValue('lastRunAt').getTime() == action.lastRunAt.get().toEpochMilli()
             parameterMap.getValue('completedAt').getTime() == action.completedAt.get().toEpochMilli()
             parameterMap.getValue('result') == action.result.get().content
@@ -32,7 +33,7 @@ class ActionSqlMapperTest extends Specification {
 
     def "should properly map to action from result set"() {
         given:
-            def action = anAction(isCompleted: true)
+            def action = anAction(isCompleted: true, fingerprint: "fp-1")
 
         and:
             def resultSet = Mock(ResultSet)
@@ -40,6 +41,7 @@ class ActionSqlMapperTest extends Specification {
             resultSet.getString("type") >> action.actionId.type
             resultSet.getString("client") >> action.actionId.client
             resultSet.getTimestamp("created_at") >> new Timestamp(action.createdAt.toEpochMilli())
+            resultSet.getString("fingerprint") >> "fp-1"
             resultSet.getTimestamp("last_run_at") >> new Timestamp(action.lastRunAt.get().toEpochMilli())
             resultSet.getTimestamp("completed_at") >> new Timestamp(action.completedAt.get().toEpochMilli())
             resultSet.getBytes("result") >> action.result.get().content
@@ -52,8 +54,27 @@ class ActionSqlMapperTest extends Specification {
         then:
             entity.actionId == action.actionId
             entity.createdAt.toEpochMilli() == action.createdAt.toEpochMilli()
+            entity.fingerprint.get() == "fp-1"
             entity.lastRunAt.get().toEpochMilli() == action.lastRunAt.get().toEpochMilli()
             entity.completedAt.get().toEpochMilli() == action.completedAt.get().toEpochMilli()
             entity.result.get() == action.result.get()
+    }
+
+    def "should map action without fingerprint"() {
+        given:
+            def resultSet = Mock(ResultSet)
+            resultSet.getString("key") >> "key"
+            resultSet.getString("type") >> "type"
+            resultSet.getString("client") >> "client"
+            resultSet.getString("fingerprint") >> null
+            resultSet.wasNull() >> true
+
+        when:
+            def entity = mapper.toEntity(resultSet)
+            def parameterMap = mapper.toSql(anAction())
+
+        then:
+            entity.fingerprint.isEmpty()
+            parameterMap.getValue('fingerprint') == null
     }
 }

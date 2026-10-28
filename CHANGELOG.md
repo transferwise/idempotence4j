@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 2.1.0 - 2026-10-28
+
+### Upgrade notes
+- **Database migration required before deploying:** `V20261028120000__add_idempotent_action_fingerprint.sql` adds a nullable `fingerprint` column to `idempotent_action`.
+  It is a metadata-only change on PostgreSQL 11+ and MariaDB 10.3+. If you keep copies of the migrations in your project, copy this one too.
+
+### Added
+- Optional payload fingerprint: `IdempotenceService.execute(actionId, fingerprint, ...)` overloads store a digest of the request with the action
+  and throw `ActionPayloadMismatchException` when the same action id is submitted again with a different fingerprint
+- `MISMATCH` metrics outcome
+- `EphemeralIdempotenceService` supports fingerprints
+
+### Changed
+- `IdempotenceService` fingerprint methods are default methods throwing `UnsupportedOperationException`, so existing custom implementations keep compiling
+
 ## 2.0.0 - 2026-01-12
 
 ### Breaking Changes

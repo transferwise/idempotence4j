@@ -1,0 +1,1 @@
+ALTER TABLE idempotent_action ADD COLUMN IF NOT EXISTS fingerprint VARCHAR(255) CHARACTER SET latin1 NULL;

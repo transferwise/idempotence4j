@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.transferwise.idempotence4j.core.Action
 import com.transferwise.idempotence4j.core.DefaultIdempotenceService
+import com.transferwise.idempotence4j.core.exception.ActionPayloadMismatchException
 import com.transferwise.idempotence4j.core.exception.ConflictingActionException
 import com.transferwise.idempotence4j.core.metrics.MetricsPublisher
 import com.transferwise.idempotence4j.core.serializers.json.JsonResultSerializer
@@ -14,6 +15,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import spock.lang.Subject
 
 import java.lang.reflect.Type
+import java.util.concurrent.Callable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
@@ -139,5 +141,70 @@ class DefaultIdempotenceServicePostgresIntegrationTest extends IntegrationTest {
             }, new TypeReference<TestResult>() {})
         then:
             noExceptionThrown()
+    }
+
+    def "should reject retry with a different payload fingerprint"() {
+        given:
+            def actionId = anActionId()
+            def typeRef = new TypeReference<TestResult>() {}
+            def executionCount = new AtomicInteger()
+            def procedure = {
+                executionCount.incrementAndGet()
+                aResult()
+            }
+        and:
+            service.execute(actionId, "fp-1", procedure, typeRef)
+        when:
+            service.execute(actionId, "fp-2", procedure, typeRef)
+        then:
+            thrown(ActionPayloadMismatchException)
+            executionCount.get() == 1
+    }
+
+    def "should return existing result for retry with the same payload fingerprint"() {
+        given:
+            def actionId = anActionId()
+            def typeRef = new TypeReference<TestResult>() {}
+            def result = aResult()
+            def executionCount = new AtomicInteger()
+            def procedure = {
+                executionCount.incrementAndGet()
+                result
+            }
+        when:
+            service.execute(actionId, "fp-1", procedure, typeRef)
+            def retryOutcome = service.execute(actionId, "fp-1", procedure, typeRef)
+        then:
+            retryOutcome == result
+            executionCount.get() == 1
+    }
+
+    def "should reject a different payload fingerprint while the first submission is in progress"() {
+        given:
+            def actionId = anActionId()
+            def typeRef = new TypeReference<TestResult>() {}
+            def started = new CountDownLatch(1)
+            def release = new CountDownLatch(1)
+            def pool = Executors.newSingleThreadExecutor()
+        and:
+            def original = pool.submit({
+                service.execute(actionId, "fp-1", { ->
+                    started.countDown()
+                    release.await()
+                    return aResult()
+                }, typeRef)
+            } as Callable)
+            started.await()
+        when:
+            service.execute(actionId, "fp-2", { -> aResult() }, typeRef)
+        then:
+            thrown(ActionPayloadMismatchException)
+        when:
+            release.countDown()
+        then:
+            original.get() != null
+        cleanup:
+            release.countDown()
+            pool.shutdown()
     }
 }

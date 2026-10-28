@@ -33,7 +33,7 @@ public class JdbcPostgresLockProvider implements LockProvider {
 	//@formatter:off
 	private final static String LOCK_SQL =
             "SELECT " +
-                "key, type, client, created_at, last_run_at, completed_at, result, result_type " +
+                "key, type, client, created_at, fingerprint, last_run_at, completed_at, result, result_type " +
 			"FROM idempotent_action " +
 			"WHERE " +
 				"key = :key " +

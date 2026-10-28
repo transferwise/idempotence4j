@@ -148,6 +148,43 @@ class JdbcPostgresActionRepositoryIntegrationTest extends IntegrationTest {
             }
     }
 
+    def "should persist fingerprint on insert and keep it on update"() {
+        given:
+            def actionId = anActionId()
+            repository.insertOrGet(new Action(actionId, "fp-1"))
+        and:
+            def completedAction = new Action(actionId, "fp-2")
+            completedAction.started()
+            completedAction.completed(anActionResult())
+        when:
+            repository.update(completedAction)
+        then:
+            verifyAll(repository.find(actionId).get()) {
+                fingerprint.get() == "fp-1"
+                hasCompleted()
+            }
+    }
+
+    def "should return persisted fingerprint on ID conflict"() {
+        given:
+            def actionId = anActionId()
+            repository.insertOrGet(new Action(actionId, "fp-1"))
+        when:
+            def retryAction = repository.insertOrGet(new Action(actionId, "fp-2"))
+        then:
+            retryAction.fingerprint.get() == "fp-1"
+            countActions() == 1
+    }
+
+    def "should persist action without fingerprint"() {
+        given:
+            def actionId = anActionId()
+        when:
+            repository.insertOrGet(new Action(actionId))
+        then:
+            repository.find(actionId).get().fingerprint.isEmpty()
+    }
+
     private countActions() {
         sql.firstRow('select count(*) as cnt from idempotent_action').cnt
     }

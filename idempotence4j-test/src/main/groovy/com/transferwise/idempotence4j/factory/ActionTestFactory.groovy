@@ -32,9 +32,10 @@ class ActionTestFactory {
     static anAction(
         Map args = [:],
         ActionId actionId = anActionId(),
-        Boolean isCompleted = false
+        Boolean isCompleted = false,
+        String fingerprint = null
     ) {
-        Action action = new Action(args.actionId as ActionId ?: actionId)
+        Action action = new Action(args.actionId as ActionId ?: actionId, args.fingerprint as String ?: fingerprint)
 
         if(args.containsKey('isCompleted') ? args.isCompleted as Boolean : isCompleted) {
             action.started()

@@ -89,7 +89,7 @@ public class JdbcPostgresActionRepository implements ActionRepository {
     //@formatter:off
 	private final static String FIND_BY_ID_SQL =
 			"SELECT " +
-				"key, type, client, created_at, last_run_at, completed_at, result, result_type " +
+				"key, type, client, created_at, fingerprint, last_run_at, completed_at, result, result_type " +
 			"FROM idempotent_action " +
 			"WHERE " +
 				"key = :key " +
@@ -99,12 +99,13 @@ public class JdbcPostgresActionRepository implements ActionRepository {
 
 	private final static String UPSERT_SQL =
 			"INSERT INTO " +
-				"idempotent_action(key, type, client, created_at, last_run_at, completed_at, result, result_type) " +
+				"idempotent_action(key, type, client, created_at, fingerprint, last_run_at, completed_at, result, result_type) " +
 			"VALUES (" +
 				":key, " +
 				":type, " +
 				":client, " +
 				":createdAt, " +
+				":fingerprint, " +
 				":lastRunAt, " +
 				":completedAt, " +
 				":result, " +
@@ -115,12 +116,13 @@ public class JdbcPostgresActionRepository implements ActionRepository {
 
 	private final static String UPDATE_SQL =
 			"INSERT INTO " +
-				"idempotent_action(key, type, client, created_at, last_run_at, completed_at, result, result_type) " +
+				"idempotent_action(key, type, client, created_at, fingerprint, last_run_at, completed_at, result, result_type) " +
 			"VALUES (" +
 				":key, " +
 				":type, " +
 				":client, " +
 				":createdAt, " +
+				":fingerprint, " +
 				":lastRunAt, " +
 				":completedAt, " +
 				":result, " +

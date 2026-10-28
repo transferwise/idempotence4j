@@ -1,5 +1,5 @@
-<a href="https://img.shields.io/badge/release-2.0.0-orange">
-        <img src="https://img.shields.io/badge/release-2.0.0-orange"
+<a href="https://img.shields.io/badge/release-2.1.0-orange">
+        <img src="https://img.shields.io/badge/release-2.1.0-orange"
             alt="Release version"/></a>
 
 # idempotence4j
@@ -55,6 +55,42 @@ public class ApplicationService {
 }
 
 ```
+
+### Payload fingerprint
+
+A client may reuse an action id for a different request by mistake. By default the stored result of the first request is returned.
+To detect this, pass a fingerprint of the request payload as the second argument:
+
+```java
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
+
+private static String fingerprint(byte[] payload) {
+    try {
+        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(payload));
+    } catch (NoSuchAlgorithmException ex) {
+        throw new IllegalStateException("SHA-256 is not available", ex);
+    }
+}
+
+Transfer transfer = idempotenceService.execute(
+    actionId,
+    fingerprint(payloadBytes),
+    transferRepository::get,
+    () -> transferRepository.save(Transfer.create(command)),
+    Transfer::getId,
+    new TypeReference<TransferId>() {}
+);
+```
+
+- The fingerprint is stored with the action when it is first submitted. It must not be longer than 255 characters,
+  otherwise `IllegalArgumentException` is thrown. A hex encoded SHA-256 digest is 64 characters.
+- If the same action id is submitted again with a different fingerprint, `ActionPayloadMismatchException` is thrown
+  instead of executing or replaying the action, whether the first request completed or is still in progress.
+  Map it to a non-retryable response, for example HTTP `422 Unprocessable Entity`.
+- The check is skipped when either side has no fingerprint, so actions stored before this feature, or calls without a fingerprint, behave as before.
+- Compute the fingerprint only from the fields that define the request, not from values that change between retries such as timestamps.
 
 ## Adding idempotence4j to your build
 
@@ -112,6 +148,9 @@ dependencies {
 
 Please **only use the following configuration approach** if your flyway configuration has `flyway.outOfOrder` flag enabled, otherwise please create an exact copy of these migrations in your project flyway module.
 
+> :exclamation: **_Upgrading:_** new library versions may add migrations, for example `V20261028120000__add_idempotent_action_fingerprint.sql` in `2.1.0`.
+> Apply them before deploying the new version. If you keep copies of the migrations, copy the new ones too.
+
 `Postgres` module contains Flyway migration definitions to keep required tables schemas up-to-date. Both `yaml` and `java` configuration examples provided below:
 
 ```yaml
@@ -160,7 +199,7 @@ idempotence4j:
 
 Each action execution collects and publishes metrics. **idempotence4j-metrics** module provides default `io.micrometer` integration and publishes following metrics:
 
-- idempotence4j.executions - **counter** with a set of tags {`type`, `client`, `outcome`}
+- idempotence4j.executions - **counter** with a set of tags {`type`, `client`, `outcome`}, where `outcome` is one of `SUCCESS`, `ERROR`, `CONFLICT` or `MISMATCH`
 - idempotence4j.executions.retries - **counter** with a set of tags {`type`, `client`}
 - idempotence4j.execution.latency - **timer** with a set of tags {`type`, `client`, `outcome`}
 
