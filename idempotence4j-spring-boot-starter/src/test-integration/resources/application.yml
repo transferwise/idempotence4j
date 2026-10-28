@@ -10,6 +10,8 @@ spring:
   sql:
     init:
       mode: never
+  flyway:
+    locations: classpath:db/idempotence4j/postgres
 
 idempotence4j:
   retention:

@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -34,13 +35,12 @@ import javax.sql.DataSource;
 
 import java.time.Period;
 
-import static com.transferwise.idempotence4j.autoconfigure.Idempotence4jAutoConfiguration.PostgresAutoConfiguration;
 import static com.transferwise.idempotence4j.autoconfigure.Idempotence4jAutoConfiguration.MetricsPublisherAutoConfiguration;
 
 @Configuration
 @Slf4j
 @ConditionalOnClass(value = {JdbcTemplate.class, PlatformTransactionManager.class})
-@AutoConfigureAfter(value = {PostgresAutoConfiguration.class, MetricsPublisherAutoConfiguration.class})
+@AutoConfigureAfter(value = {MetricsPublisherAutoConfiguration.class})
 public class Idempotence4jAutoConfiguration {
 
     @Bean
@@ -75,37 +75,28 @@ public class Idempotence4jAutoConfiguration {
         return new DefaultIdempotenceService(platformTransactionManager, lockProvider, actionRepository, resultSerializer, metricsPublisher);
     }
 
+    /**
+     * The starter ships both database modules, so the implementation is picked from the datasource rather than the classpath
+     */
     @Configuration
-    @ConditionalOnClass({ JdbcPostgresActionRepository.class, JdbcPostgresLockProvider.class })
-    public static class PostgresAutoConfiguration {
+    public static class DatabaseAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        public ActionRepository postgresActionRepository(DataSource dataSource) {
-            return new JdbcPostgresActionRepository(new JdbcTemplate(dataSource));
+        public ActionRepository actionRepository(DataSource dataSource) {
+            return switch (Database.of(dataSource)) {
+                case POSTGRES -> new JdbcPostgresActionRepository(new JdbcTemplate(dataSource));
+                case MARIADB -> new JdbcMariaDbActionRepository(new JdbcTemplate(dataSource));
+            };
         }
 
         @Bean
         @ConditionalOnMissingBean
-        public LockProvider postgresLockProvider(DataSource dataSource) {
-            return new JdbcPostgresLockProvider(new JdbcTemplate(dataSource));
-        }
-    }
-
-    @Configuration
-    @ConditionalOnClass({ JdbcMariaDbActionRepository.class, JdbcMariaDbLockProvider.class })
-    public static class MariaDbAutoConfiguration {
-
-        @Bean
-        @ConditionalOnMissingBean
-        public ActionRepository mariaDbActionRepository(DataSource dataSource) {
-            return new JdbcMariaDbActionRepository(new JdbcTemplate(dataSource));
-        }
-
-        @Bean
-        @ConditionalOnMissingBean
-        public LockProvider mariaDbLockProvider(DataSource dataSource) {
-            return new JdbcMariaDbLockProvider(dataSource);
+        public LockProvider lockProvider(DataSource dataSource) {
+            return switch (Database.of(dataSource)) {
+                case POSTGRES -> new JdbcPostgresLockProvider(new JdbcTemplate(dataSource));
+                case MARIADB -> new JdbcMariaDbLockProvider(dataSource);
+            };
         }
     }
 
@@ -129,7 +120,9 @@ public class Idempotence4jAutoConfiguration {
             return new RetentionProperties();
         }
 
+        // the scheduler registers the purge job once on start, so Flyway, Liquibase or SQL init must create its table first
         @Bean(initMethod = "initialize", destroyMethod = "shutdown")
+        @DependsOnDatabaseInitialization
         @ConditionalOnProperty(name="idempotence4j.retention.enabled", havingValue="true", matchIfMissing = false)
         public RetentionService retentionService(DataSource dataSource, ActionRepository actionRepository, RetentionProperties retentionProperties) {
             RetentionPolicy retentionPolicy = new RetentionPolicy(
