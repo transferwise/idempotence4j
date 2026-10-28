@@ -1,17 +1,17 @@
 wrapper {
-	gradleVersion = '8.14.3'
+	gradleVersion = '9.8.2'
 }
 
 buildscript {
 	repositories {
 		mavenCentral()
-		maven { url "https://jitpack.io" }
-		maven { url 'https://plugins.gradle.org/m2/' }
+		maven { url = "https://jitpack.io" }
+		maven { url = 'https://plugins.gradle.org/m2/' }
 		mavenLocal()
 	}
 	dependencies {
 		classpath 'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:4.1.0'
-		classpath "com.avast.gradle:gradle-docker-compose-plugin:0.15.0"
+		classpath "com.avast.gradle:gradle-docker-compose-plugin:0.17.21"
         classpath "io.spring.gradle:dependency-management-plugin:1.1.7"
         classpath "org.springframework.boot:spring-boot-gradle-plugin:3.5.7"
 	}
@@ -29,8 +29,14 @@ allprojects {
 	apply from: "${rootDir}/libraries.gradle"
 	apply from: "${rootDir}/publish.gradle"
 
-	sourceCompatibility = '17'
-	targetCompatibility = '17'
+	java {
+		sourceCompatibility = JavaVersion.VERSION_17
+		targetCompatibility = JavaVersion.VERSION_17
+	}
+	// keep Java 17 bytecode and API when compiling on a newer JDK
+	tasks.withType(JavaCompile).configureEach {
+		options.release = 17
+	}
 	repositories {
 		mavenCentral()
 		mavenLocal()
@@ -64,7 +70,7 @@ allprojects {
 
 	test {
 		useJUnitPlatform()
-		reports.junitXml.destination = file('build/test-results')
+		reports.junitXml.outputLocation = file('build/test-results')
 
 		testLogging {
 			events "passed", "skipped", "failed", "standardError"
@@ -75,7 +81,7 @@ allprojects {
 
 	integrationTest {
 		useJUnitPlatform()
-		reports.junitXml.destination = file('build/test-integration-results')
+		reports.junitXml.outputLocation = file('build/test-integration-results')
 
 		testLogging {
 			events "passed", "skipped", "failed", "standardError"
@@ -90,10 +96,12 @@ allprojects {
 	}
 
 	plugins.withId('docker-compose') {
-		def candidates = ['/opt/homebrew/bin/docker-compose', '/usr/local/bin/docker-compose']
-		def resolved = candidates.find { new File(it).exists() }
+		def resolveExecutable = { String name ->
+			['/opt/homebrew/bin', '/usr/local/bin'].collect { "${it}/${name}" }.find { new File(it).exists() } ?: name
+		}
 		dockerCompose {
-			executable = resolved ?: 'docker-compose'
+			executable = resolveExecutable('docker-compose')
+			dockerExecutable = resolveExecutable('docker')
 		}
 	}
 }

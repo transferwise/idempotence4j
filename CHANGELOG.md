@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 2.0.1 - 2026-10-28
+
+### Added
+- Java 21 and Java 25 support, CI matrix now tests Java 17, 21 and 25 against Spring Boot 3.5.7 and 4.0.1
+
+### Changed
+- Gradle 8.14.3 → 9.8.2 (required to run the build on Java 25)
+- Lombok 1.18.32 → 1.18.48 (1.18.32 fails to compile on Java 25)
+- gradle-docker-compose-plugin 0.15.0 → 0.17.21 (0.15.0 is not compatible with Gradle 9)
+- Compilation uses `--release 17`, so artifacts stay Java 17 compatible when built on a newer JDK
+
+### Fixed
+- Local integration tests failing on macOS with Homebrew Docker, the `docker` executable is now resolved like `docker-compose`
+
 ## 2.0.0 - 2026-01-12
 
 ### Breaking Changes
